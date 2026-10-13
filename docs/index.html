@@ -4,103 +4,187 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Biodex — the dex of living things</title>
-<meta name="description" content="Biodex: a free, self-hosted Pokédex of living things. Photograph, recognise, collect with friends.">
-<style>
-  :root { --fond: #0b1220; --fond2: #121a2e; --texte: #e8eefc; --doux: #9aa8c7; --accent: #2fc3c1; --accent2: #ffd166; }
-  * { box-sizing: border-box; }
-  body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--fond); color: var(--texte); }
-  a { color: var(--accent); }
-  header { padding: 72px 20px 40px; text-align: center; background: radial-gradient(ellipse at 50% -20%, #1d3b5c 0, var(--fond) 60%); }
-  header h1 { font-size: clamp(40px, 8vw, 72px); margin: 0; letter-spacing: -.02em; }
-  header p.sous { font-size: clamp(18px, 3vw, 24px); color: var(--doux); margin: 10px 0 28px; }
-  .boutons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-  .bouton { display: inline-block; padding: 12px 22px; border-radius: 14px; font-weight: 700; text-decoration: none; }
-  .bouton.principal { background: var(--accent); color: #06231f; }
-  .bouton.secondaire { border: 1.5px solid var(--doux); color: var(--texte); }
-  main { max-width: 1040px; margin: 0 auto; padding: 0 20px 80px; }
-  section { margin: 56px 0; }
-  h2 { font-size: 28px; margin: 0 0 8px; }
-  p.intro { color: var(--doux); max-width: 70ch; }
-  .galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-top: 18px; }
-  .galerie figure { margin: 0; }
-  .galerie img { width: 100%; border-radius: 18px; border: 1px solid #243352; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
-  .galerie figcaption { font-size: 13px; color: var(--doux); margin-top: 6px; text-align: center; }
-  .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 18px; }
-  .carte { background: var(--fond2); border: 1px solid #243352; border-radius: 16px; padding: 18px; }
-  .carte h3 { margin: 0 0 6px; font-size: 17px; }
-  .carte p { margin: 0; color: var(--doux); font-size: 14.5px; }
-  pre { background: #050a14; border: 1px solid #243352; border-radius: 12px; padding: 14px 16px; overflow-x: auto; font-size: 13.5px; }
-  footer { text-align: center; color: var(--doux); font-size: 13px; padding: 30px 20px; border-top: 1px solid #1c2740; }
-  .etiquette { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent2); }
-</style>
+<meta name="description" content="Biodex: a free, self-hosted Pokédex of living things. Photograph, recognise among a million species, collect with friends. Android app, web client, your own server.">
+<meta property="og:title" content="Biodex — the dex of living things">
+<meta property="og:description" content="A free, self-hosted Pokédex of living things. Photograph, recognise, collect with friends.">
+<meta property="og:image" content="https://raaatus.github.io/BioDex/captures/ios-dex.png">
+<link rel="icon" href="icone.png">
+<link rel="apple-touch-icon" href="icone.png">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <span class="etiquette">Free · self-hosted · no tracking</span>
-  <h1>Biodex</h1>
-  <p class="sous">The dex of living things. Photograph whatever you come across, fill your collection, compare it with your friends'.</p>
-  <div class="boutons">
-    <a class="bouton principal" href="https://github.com/Raaatus/BioDex/releases/latest">Download the Android app</a>
-    <a class="bouton secondaire" href="https://github.com/Raaatus/BioDex#on-iphone-no-app-the-website">iPhone: add the site to your home screen</a>
-    <a class="bouton secondaire" href="https://github.com/Raaatus/BioDex">Source on GitHub</a>
-    <a class="bouton secondaire" href="https://github.com/Raaatus/BioDex#host-your-own-server">Host your own server</a>
-  </div>
-</header>
+<div class="page">
+  <header class="barre">
+    <a class="marque" href="./"><img src="icone.png" alt="">Biodex</a>
+    <nav>
+      <a href="#fonctions">Features</a>
+      <a href="#moteur">How it works</a>
+      <a href="#captures">Screenshots</a>
+      <a href="#themes">Themes</a>
+      <a href="#telecharger">Download</a>
+      <a href="docs.html">Documentation</a>
+      <a href="https://github.com/Raaatus/BioDex">GitHub</a>
+      <a class="cta" href="#telecharger">Get Biodex</a>
+    </nav>
+  </header>
 
-<main>
-  <section>
-    <h2>How it works</h2>
-    <p class="intro">A photo goes to your server. A detector frames the animal, a vision model compares it to nearly a million species, and the matching slot fills up in your dex. Plants and fungi have their own engine. Nothing leaves your server.</p>
+  <section class="heros">
+    <div>
+      <span class="etiquette">Free · self-hosted · no tracking</span>
+      <h1>The <span>dex</span> of living things.</h1>
+      <p class="accroche">Photograph whatever you come across. Your own server recognises it among nearly a million species and fills the slot. Your friends do the same — and you compare.</p>
+      <div class="boutons">
+        <a class="bouton principal" href="https://github.com/Raaatus/BioDex/releases/latest">⬇ Android app</a>
+        <a class="bouton secondaire" href="docs.html#on-iphone-no-app-the-website"> iPhone: add to home screen</a>
+        <a class="bouton secondaire" href="docs.html#host-your-own-server">🖥 Host your server</a>
+      </div>
+      <div class="chiffres">
+        <div><b>976 000</b><span>species slots</span></div>
+        <div><b>82</b><span>achievements, each with a 3D frog</span></div>
+        <div><b>50</b><span>ranks to climb</span></div>
+        <div><b>17</b><span>themes, 13 animated</span></div>
+      </div>
+    </div>
+    <div class="telephone">
+      <div class="halo"></div>
+      <img src="captures/ios-dex.png" alt="Biodex on a phone: the dex">
+    </div>
+  </section>
+
+  <section id="fonctions">
+    <h2>Point. Shoot. Collect.</h2>
+    <p class="intro">Everything a collection needs, and nothing that phones home. No email, no account anywhere, no central server: each group of friends hosts its own.</p>
     <div class="cartes">
-      <div class="carte"><h3>📸 Photograph</h3><p>From the Android app, or from the website — on iPhone there is no app and none is needed: add the site to the home screen. Crop, cut out with your finger, pick the kingdom, send.</p></div>
-      <div class="carte"><h3>🧠 Recognise</h3><p>MegaDetector to frame, BioCLIP 2 to name, Pl@ntNet for plants. A frequency prior rules out improbable exotic species.</p></div>
-      <div class="carte"><h3>📚 Collect</h3><p>976,000 slots, five rarity levels, 50 ranks, 82 achievements with their own 3D frog. Arrange your dex like a desktop.</p></div>
-      <div class="carte"><h3>👥 Share</h3><p>Friends, activity feed, reactions, leaderboard, map of everyone's finds. You decide who sees what.</p></div>
-      <div class="carte"><h3>🎨 Dress up</h3><p>Seventeen themes, thirteen with an animated backdrop: falling glyphs, northern lights, savanna, nebula…</p></div>
-      <div class="carte"><h3>🔒 Keep</h3><p>No email, no tracking, no central server. Your photos stay with you, between you and your friends.</p></div>
+      <div class="carte"><div class="ico">📸</div><h3>Photograph</h3><p>From the Android app or the website. Crop, straighten, cut the animal out with your finger before sending. Four kingdoms: animals, plants, fungi, and an aquatic lens for fish.</p></div>
+      <div class="carte"><div class="ico">🧠</div><h3>Recognise</h3><p>MegaDetector frames the animal, BioCLIP 2 names it, Pl@ntNet takes the plants, FungiTastic the mushrooms. A frequency prior rules out the improbable exotic cousin.</p></div>
+      <div class="carte"><div class="ico">📚</div><h3>Collect</h3><p>One slot per accepted species — subspecies and synonyms land together. Five rarities, 5 to 150 points, once per species. Fifty ranks from “Larva” to “Go outside, seriously”.</p></div>
+      <div class="carte"><div class="ico">🏆</div><h3>Achieve</h3><p>82 achievements, each with its own 3D frog to spin and a crystal to shatter when earned. Conditions stay hidden until you reveal them.</p></div>
+      <div class="carte"><div class="ico">🧩</div><h3>Arrange</h3><p>Press and hold, move, resize to 2×2, choose the slot shape, hide, place empty slots. Your dex, laid out like a desktop, on every device.</p></div>
+      <div class="carte"><div class="ico">👥</div><h3>Share</h3><p>Friends, activity feed, five-level reactions, favourites, captions. Tag friends in a photo: it counts in their dex too. A leaderboard of the circle and a best-catches ranking.</p></div>
+      <div class="carte"><div class="ico">🗺</div><h3>Map</h3><p>Photos where they were taken, in bubbles that cluster as you zoom out. New things first — what your friends posted and you have not seen yet.</p></div>
+      <div class="carte"><div class="ico">🎨</div><h3>Dress up</h3><p>Seventeen themes. Falling glyphs, shooting stars, bubbles, a synthwave grid, autumn leaves, cherry petals, snow, northern lights, fireflies, a savanna sunset…</p></div>
+      <div class="carte"><div class="ico">🌍</div><h3>In your language</h3><p>English and French today; adding a language is a single JSON file shared by the app, the website and the server.</p></div>
     </div>
   </section>
 
-  <section>
+  <section id="moteur">
+    <h2>How a photo becomes a slot</h2>
+    <p class="intro">Four stages on your server, about fifteen seconds on an ordinary CPU, half a second on a GPU.</p>
+    <div class="etapes">
+      <div class="etape"><h3>Detect</h3><p>MegaDetector v5a looks for an animal and crops it. A car or a landscape is rejected on the spot.</p></div>
+      <div class="etape"><h3>Compare</h3><p>BioCLIP 2 compares the crop to 411 626 Latin names for animals, with separate catalogues for plants and fungi.</p></div>
+      <div class="etape"><h3>Weigh</h3><p>An observation prior from GBIF reweights the raw scores: the roe deer beats the Chilean deer seen 404 times in history.</p></div>
+      <div class="etape"><h3>Decide</h3><p>Probabilities are summed per slot — cow, zebu and aurochs are one Cow — so the engine stops hesitating between close relatives.</p></div>
+    </div>
+    <div class="cartes" style="margin-top:14px">
+      <div class="carte"><div class="nombre">10/10</div><p>correct on the reference set with the observation prior, against 3/10 without it.</p></div>
+      <div class="carte"><div class="nombre">117</div><p>domestic breeds added as aliases, so a cocker and a poodle add up on “Dog” instead of waking the wolf.</p></div>
+      <div class="carte"><div class="nombre">0</div><p>bytes leaving your server, except the Wikipedia article fetched once per species and the address you ask it to geocode.</p></div>
+    </div>
+  </section>
+
+  <section id="captures">
     <h2>Screenshots</h2>
-    <p class="intro">The web client, on a phone, in French — the interface is also available in English. The Android app offers the same screens, with the camera on top.</p>
+    <p class="intro">The web client on a phone, in French — switch to English in the settings. Tap a picture to enlarge it.</p>
     <div class="galerie">
-      <figure><img src="captures/dex.png" alt="Le dex"><figcaption>The dex</figcaption></figure>
-      <figure><img src="captures/carte.png" alt="La carte"><figcaption>The map of finds</figcaption></figure>
-      <figure><img src="captures/amis.png" alt="Le fil des amis"><figcaption>The friends feed</figcaption></figure>
-      <figure><img src="captures/succes.png" alt="Les succès"><figcaption>Achievements</figcaption></figure>
-      <figure><img src="captures/paliers.png" alt="Les rangs"><figcaption>The 50 ranks</figcaption></figure>
-      <figure><img src="captures/ranger.png" alt="Ranger le dex"><figcaption>Arranging the dex</figcaption></figure>
-      <figure><img src="captures/theme-hacker.png" alt="Thème Hacker"><figcaption>Hacker theme</figcaption></figure>
-      <figure><img src="captures/theme-abysses.png" alt="Thème Abysses"><figcaption>Abyss theme</figcaption></figure>
-      <figure><img src="captures/theme-sakura.png" alt="Thème Sakura"><figcaption>Sakura theme</figcaption></figure>
-      <figure><img src="captures/theme-nuit.png" alt="Thème Nuit étoilée"><figcaption>Starry night theme</figcaption></figure>
-      <figure><img src="captures/dex-en.png" alt="The dex, in English"><figcaption>In English</figcaption></figure>
-      <figure><img src="captures/reglages.png" alt="Settings"><figcaption>Settings and themes</figcaption></figure>
-      <figure><img src="captures/ios-accueil.png" alt="On an iPhone home screen"><figcaption>iPhone: on the home screen, no app needed</figcaption></figure>
-      <figure><img src="captures/ios-dex.png" alt="The dex on iPhone"><figcaption>The dex, from the home screen</figcaption></figure>
-      <figure><img src="captures/ios-carte.png" alt="The map on iPhone"><figcaption>The map, from the home screen</figcaption></figure>
+      <figure><img src="captures/dex.png" alt="The dex" loading="lazy"><figcaption>The dex</figcaption></figure>
+      <figure><img src="captures/fiche.png" alt="A species" loading="lazy"><figcaption>A species</figcaption></figure>
+      <figure><img src="captures/ranger.png" alt="Arranging the dex" loading="lazy"><figcaption>Arranging the dex</figcaption></figure>
+      <figure><img src="captures/carte.png" alt="The map" loading="lazy"><figcaption>The map of finds</figcaption></figure>
+      <figure><img src="captures/carte-lieu.png" alt="A place" loading="lazy"><figcaption>Photos at one place</figcaption></figure>
+      <figure><img src="captures/amis.png" alt="Friends feed" loading="lazy"><figcaption>The friends feed</figcaption></figure>
+      <figure><img src="captures/classement.png" alt="Leaderboard" loading="lazy"><figcaption>Leaderboard</figcaption></figure>
+      <figure><img src="captures/dex-ami.png" alt="A friend's dex" loading="lazy"><figcaption>A friend's dex</figcaption></figure>
+      <figure><img src="captures/profil.png" alt="Profile" loading="lazy"><figcaption>Profile</figcaption></figure>
+      <figure><img src="captures/succes.png" alt="Achievements" loading="lazy"><figcaption>Achievements</figcaption></figure>
+      <figure><img src="captures/paliers.png" alt="Ranks" loading="lazy"><figcaption>The 50 ranks</figcaption></figure>
+      <figure><img src="captures/galerie.png" alt="Gallery" loading="lazy"><figcaption>Gallery</figcaption></figure>
+      <figure><img src="captures/vitrine.png" alt="Showcase" loading="lazy"><figcaption>Showcase</figcaption></figure>
+      <figure><img src="captures/capture.png" alt="Capture" loading="lazy"><figcaption>Capture</figcaption></figure>
+      <figure><img src="captures/reglages.png" alt="Settings" loading="lazy"><figcaption>Settings and themes</figcaption></figure>
+      <figure><img src="captures/dex-en.png" alt="In English" loading="lazy"><figcaption>In English</figcaption></figure>
+    </div>
+    <h2 style="margin-top:48px;font-size:28px">On an iPhone, from the home screen</h2>
+    <p class="intro">No iOS app, and none needed: Safari → Share → Add to Home Screen. Full screen, its own icon, signed in.</p>
+    <div class="galerie telephones">
+      <figure><img src="captures/ios-accueil.png" alt="Home screen" loading="lazy"><figcaption>On the home screen</figcaption></figure>
+      <figure><img src="captures/ios-dex.png" alt="The dex" loading="lazy"><figcaption>The dex</figcaption></figure>
+      <figure><img src="captures/ios-carte.png" alt="The map" loading="lazy"><figcaption>The map</figcaption></figure>
+      <figure><img src="captures/ios-fiche.png" alt="A species" loading="lazy"><figcaption>A species</figcaption></figure>
+      <figure><img src="captures/ios-amis.png" alt="Friends" loading="lazy"><figcaption>Friends feed</figcaption></figure>
+      <figure><img src="captures/ios-galerie.png" alt="Gallery" loading="lazy"><figcaption>Gallery</figcaption></figure>
     </div>
   </section>
 
-  <section>
-    <h2>Host your own server</h2>
-    <p class="intro">A Linux box with Python 3.12, 8 GB of RAM and about twenty gigabytes of disk is enough. No GPU needed: an analysis takes about fifteen seconds on a CPU.</p>
-<pre>git clone https://github.com/Raaatus/BioDex.git
-cd BioDex/backend
-uv venv .venv && uv pip install -p .venv/bin/python -r requirements.txt -r requirements-moteur.txt
-# catalogues and weights: see the README, section “The data”
-./run.sh                      # the API, on :8077
-.venv/bin/python serveur_web.py   # the web client, on :8090</pre>
-    <p class="intro">The repository README details every step: the data to download, the systemd service, HTTPS, upgrading without losing anything.</p>
+  <section id="themes">
+    <h2>Seventeen themes</h2>
+    <p class="intro">Thirteen of them with an animated backdrop behind every screen — the very same engine that is painting behind this page. Pick one below.</p>
+    <div class="decors"></div>
+    <div class="themes" style="margin-top:14px">
+      <figure><img src="captures/theme-hacker.png" alt="Hacker" loading="lazy"><figcaption>Hacker — falling glyphs</figcaption></figure>
+      <figure><img src="captures/theme-nuit.png" alt="Starry night" loading="lazy"><figcaption>Starry night — shooting stars</figcaption></figure>
+      <figure><img src="captures/theme-abysses.png" alt="Abyss" loading="lazy"><figcaption>Abyss — bubbles and light rays</figcaption></figure>
+      <figure><img src="captures/theme-sakura.png" alt="Sakura" loading="lazy"><figcaption>Sakura — petals in the wind</figcaption></figure>
+      <figure><img src="captures/theme-foret.png" alt="Forest" loading="lazy"><figcaption>Forest — autumn leaves</figcaption></figure>
+      <figure><img src="captures/ios-nuit.png" alt="Starry night on iPhone" loading="lazy"><figcaption>Starry night, on iPhone</figcaption></figure>
+      <figure><img src="captures/ios-sakura.png" alt="Sakura on iPhone" loading="lazy"><figcaption>Sakura, on iPhone</figcaption></figure>
+    </div>
   </section>
 
-  <section>
-    <h2>Sources</h2>
-    <p class="intro">Species and their observations come from <a href="https://www.gbif.org/">GBIF</a>; silhouettes from <a href="https://www.phylopic.org/">PhyloPic</a> and its contributors; articles from Wikipedia; recognition from <a href="https://github.com/microsoft/CameraTraps">MegaDetector</a>, <a href="https://imageomics.github.io/bioclip-2/">BioCLIP 2</a> and <a href="https://plantnet.org/">Pl@ntNet</a>. Thanks to them.</p>
+  <section id="telecharger">
+    <h2>Get Biodex</h2>
+    <p class="intro">Two clients, one server. Pick what you need.</p>
+    <div class="telechargements">
+      <div class="carte">
+        <div class="ico">🤖</div><h3>Android app</h3>
+        <p>The APK, signed and ready. Allow installs outside the Play Store, then enter your server's address at first launch.</p>
+        <small>Attached to every release.</small>
+        <a class="bouton principal" href="https://github.com/Raaatus/BioDex/releases/latest">Download the APK</a>
+      </div>
+      <div class="carte">
+        <div class="ico"></div><h3>iPhone</h3>
+        <p>Open your server's address in Safari, tap Share, then Add to Home Screen. That is the app.</p>
+        <small>Needs HTTPS for the camera from the home screen.</small>
+        <a class="bouton secondaire" href="docs.html#on-iphone-no-app-the-website">How to</a>
+      </div>
+      <div class="carte">
+        <div class="ico">🖥</div><h3>Server and web client</h3>
+        <p>Python 3.12, FastAPI, SQLite. Runs on a CPU. The code as a ZIP, or clone the repository.</p>
+        <small>Source archive of the main branch, always current.</small>
+        <a class="bouton or" href="https://github.com/Raaatus/BioDex/archive/refs/heads/main.zip">Download the code (ZIP)</a>
+      </div>
+      <div class="carte">
+        <div class="ico">📦</div><h3>Data pack</h3>
+        <p>The species database without any player, encoded catalogues, detector weights, silhouettes. About 2.3 GB, fetched and checked by one script.</p>
+        <small>Attached to the <code>donnees-v1</code> release.</small>
+        <a class="bouton secondaire" href="https://github.com/Raaatus/BioDex/releases/tag/donnees-v1">Data pack release</a>
+      </div>
+    </div>
+    <pre><code>git clone https://github.com/Raaatus/BioDex.git &amp;&amp; cd BioDex/backend
+uv venv .venv &amp;&amp; uv pip install -p .venv/bin/python -r requirements-moteur.txt
+.venv/bin/python outils/installe_donnees.py https://github.com/Raaatus/BioDex/releases/download/donnees-v1
+./run.sh &amp;                        # the API on :8077
+.venv/bin/python serveur_web.py   # the web client on :8090</code></pre>
+    <p class="intro" style="margin-top:14px">Then the <a href="docs.html#host-your-own-server">full installation guide</a>: systemd units, HTTPS with Caddy, configuration, upgrading without losing anything.</p>
   </section>
-</main>
 
-<footer>Biodex is released under the MIT licence. This page is served by GitHub Pages from the repository's <code>docs/</code> folder.</footer>
+  <section id="documentation">
+    <h2>Documentation</h2>
+    <p class="intro">Everything in one place: how it works, installing, configuring, upgrading, translating, rebuilding the data, privacy. Generated from the repository README, so it never drifts.</p>
+    <div class="boutons">
+      <a class="bouton principal" href="docs.html">Read the documentation</a>
+      <a class="bouton secondaire" href="https://github.com/Raaatus/BioDex/blob/main/README.md">The README on GitHub</a>
+      <a class="bouton secondaire" href="https://github.com/Raaatus/BioDex/blob/main/i18n/README.md">Translating Biodex</a>
+    </div>
+  </section>
+</div>
+
+<footer>
+  Biodex is released under the MIT licence. Species and observations from <a href="https://www.gbif.org/">GBIF</a>, silhouettes from <a href="https://www.phylopic.org/">PhyloPic</a> and its contributors, articles from Wikipedia, recognition from MegaDetector, BioCLIP 2, Pl@ntNet and FungiTastic.<br>
+  This page is served by GitHub Pages from the repository's <code>docs/</code> folder. The backdrop behind it is <code>fond.js</code>, the same file the web client uses.
+</footer>
+
+<script src="fond.js"></script>
+<script src="site.js"></script>
 </body>
 </html>

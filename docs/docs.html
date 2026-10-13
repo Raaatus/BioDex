@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biodex — documentation</title>
+<meta name="description" content="Biodex documentation: how it works, hosting your own server, the Android app, the web client on iPhone, configuration, upgrading, languages, data.">
+<link rel="icon" href="icone.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+  <header class="barre">
+    <a class="marque" href="./"><img src="icone.png" alt="">Biodex</a>
+    <nav>
+      <a href="./">Home</a>
+      <a href="./#captures">Screenshots</a>
+      <a href="./#telecharger">Download</a>
+      <a class="actif" href="docs.html">Documentation</a>
+      <a href="https://github.com/Raaatus/BioDex">GitHub</a>
+      <a class="cta" href="https://github.com/Raaatus/BioDex/releases/latest">Get Biodex</a>
+    </nav>
+  </header>
+  <div class="doc">
+    <aside>
+      <input type="search" placeholder="Filter sections…" aria-label="Filter sections">
+      <a href="#contents">Contents</a><a href="#screenshots">Screenshots</a><a href="#what-biodex-does">What Biodex does</a><a class="h3" href="#photograph-and-recognise">Photograph and recognise</a><a class="h3" href="#collect">Collect</a><a class="h3" href="#with-friends">With friends</a><a class="h3" href="#dress-it-up">Dress it up</a><a class="h3" href="#stay-in-control">Stay in control</a><a href="#how-it-works">How it works</a><a class="h3" href="#domestic-animals">Domestic animals</a><a class="h3" href="#silhouettes">Silhouettes</a><a class="h3" href="#rarities-and-points">Rarities and points</a><a class="h3" href="#two-clients-one-api">Two clients, one API</a><a href="#host-your-own-server">Host your own server</a><a class="h3" href="#requirements">Requirements</a><a class="h3" href="#1-the-code">1. The code</a><a class="h3" href="#2-the-data">2. The data</a><a class="h3" href="#3-run">3. Run</a><a class="h3" href="#4-as-a-service">4. As a service</a><a class="h3" href="#5-https">5. HTTPS</a><a class="h3" href="#-the-purge">⚠️ The purge</a><a href="#the-web-client">The web client</a><a href="#on-iphone-no-app-the-website">On iPhone: no app, the website</a><a href="#the-android-app">The Android app</a><a class="h3" href="#install">Install</a><a class="h3" href="#build-it-yourself">Build it yourself</a><a href="#configuration">Configuration</a><a href="#upgrading">Upgrading</a><a href="#languages">Languages</a><a href="#rebuilding-the-data-yourself">Rebuilding the data yourself</a><a href="#useful-commands">Useful commands</a><a href="#privacy-and-security">Privacy and security</a><a href="#repository-layout">Repository layout</a><a href="#contributing">Contributing</a><a href="#credits-and-licence">Credits and licence</a><a href="#résumé-en-français">Résumé en français</a>
+      <a href="https://github.com/Raaatus/BioDex/edit/main/README.md" style="margin-top:14px;color:var(--accent)">✎ Edit this page on GitHub</a>
+    </aside>
+    <article class="prose">
+<p align="center">
+  <img src="captures/dex.png" width="200" alt="The dex">
+  <img src="captures/carte.png" width="200" alt="The map">
+  <img src="captures/succes.png" width="200" alt="Achievements">
+  <img src="captures/ios-dex.png" width="200" alt="On an iPhone home screen">
+</p>
+
+<h1 align="center">Biodex</h1>
+
+<p align="center"><b>The dex of living things.</b> Photograph whatever you come across, the species gets recognised, the slot fills up. With friends, on your own server.</p>
+
+<p align="center">
+  <a href="https://raaatus.github.io/BioDex/">Website</a> ·
+  <a href="https://github.com/Raaatus/BioDex/releases/latest">Download the APK</a> ·
+  <a href="#host-your-own-server">Host your own server</a> ·
+  <a href="#résumé-en-français">Français</a>
+</p>
+
+<p align="center">
+  <img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-2fc3c1">
+  <img alt="Python 3.12" src="https://img.shields.io/badge/python-3.12-3776ab">
+  <img alt="Flutter" src="https://img.shields.io/badge/flutter-stable-02569b">
+  <img alt="Languages" src="https://img.shields.io/badge/languages-en%20%7C%20fr-ffd166">
+</p>
+
+<hr />
+<p>Biodex is a <strong>Pokédex of living things</strong>, free and self-hosted. You photograph an animal, a plant or a mushroom; the photo goes to <em>your</em> server, which recognises it among nearly a million species and fills the matching slot in your collection. Your friends do the same, and you compare.</p>
+<p>There is <strong>no central server</strong>: each group hosts its own. No email address, no tracking, no account with anyone. Your photos stay with you.</p>
+<p>Two clients, one server:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Server</strong></td>
+<td>Python · FastAPI · SQLite. Recognition (MegaDetector, BioCLIP 2, Pl@ntNet, FungiTastic), accounts, the dex, friends, the map.</td>
+</tr>
+<tr>
+<td><strong>Web client</strong></td>
+<td>Plain HTML/JS, phone-first. Everything the app does. <strong>On iPhone, this is the app</strong>: add it to the home screen, nothing to install.</td>
+</tr>
+<tr>
+<td><strong>Android app</strong></td>
+<td>Flutter. The camera, and animations a browser cannot do.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="contents">Contents</h2>
+<ul>
+<li><a href="#screenshots">Screenshots</a></li>
+<li><a href="#what-biodex-does">What Biodex does</a></li>
+<li><a href="#how-it-works">How it works</a></li>
+<li><a href="#host-your-own-server">Host your own server</a></li>
+<li><a href="#the-web-client">The web client</a></li>
+<li><a href="#on-iphone-no-app-the-website">On iPhone: no app, the website</a></li>
+<li><a href="#the-android-app">The Android app</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#upgrading">Upgrading</a></li>
+<li><a href="#languages">Languages</a></li>
+<li><a href="#rebuilding-the-data-yourself">Rebuilding the data yourself</a></li>
+<li><a href="#useful-commands">Useful commands</a></li>
+<li><a href="#privacy-and-security">Privacy and security</a></li>
+<li><a href="#repository-layout">Repository layout</a></li>
+<li><a href="#contributing">Contributing</a></li>
+<li><a href="#credits-and-licence">Credits and licence</a></li>
+<li><a href="#résumé-en-français">Résumé en français</a></li>
+</ul>
+<hr />
+<h2 id="screenshots">Screenshots</h2>
+<p>The web client, on a phone. The Android app shows the same screens, and the <a href="#on-iphone-no-app-the-website">iPhone section</a> shows it installed on a home screen. The interface is in French here; switch to English in the settings.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">The dex</th>
+<th style="text-align: center;">A species</th>
+<th style="text-align: center;">Arranging the dex</th>
+<th style="text-align: center;">The map</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="" src="captures/dex.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/fiche.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/ranger.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/carte.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">A place</th>
+<th style="text-align: center;">Friends feed</th>
+<th style="text-align: center;">Leaderboard</th>
+<th style="text-align: center;">A friend's dex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="" src="captures/carte-lieu.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/amis.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/classement.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/dex-ami.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Profile</th>
+<th style="text-align: center;">Achievements</th>
+<th style="text-align: center;">The 50 ranks</th>
+<th style="text-align: center;">Gallery</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="" src="captures/profil.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/succes.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/paliers.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/galerie.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Capture</th>
+<th style="text-align: center;">Settings</th>
+<th style="text-align: center;">In English</th>
+<th style="text-align: center;">Showcase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="" src="captures/capture.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/reglages.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/dex-en.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/vitrine.png" /></td>
+</tr>
+</tbody>
+</table>
+<p>Seventeen themes, thirteen of them with an animated backdrop behind the screens:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Hacker</th>
+<th style="text-align: center;">Abyss</th>
+<th style="text-align: center;">Sakura</th>
+<th style="text-align: center;">Starry night</th>
+<th style="text-align: center;">Forest</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="" src="captures/theme-hacker.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/theme-abysses.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/theme-sakura.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/theme-nuit.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/theme-foret.png" /></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-biodex-does">What Biodex does</h2>
+<h3 id="photograph-and-recognise">Photograph and recognise</h3>
+<ul>
+<li><strong>Four kingdoms</strong>, each with its own engine: animals, plants, fungi, and an "aquatic" lens for fish.</li>
+<li><strong>Before sending</strong>: crop, rotate, adjust the light, <strong>cut the animal out with your finger</strong> to help the engine. The engine gets the cut-out, the gallery keeps the original.</li>
+<li>A verdict, or <strong>several guesses</strong> when the engine hesitates: pick one yourself, or search the whole reference catalogue.</li>
+<li><strong>When the engine does not know the species</strong> — a cultivar, a breed, a variety — add it to the dex by hand, for everyone. A Wikipedia article can fill it in.</li>
+<li>Fungi flagged as <strong>toxic</strong> are marked, with the warning that goes with it. No recognition should ever decide whether a mushroom is edible.</li>
+<li>iPhone photos (HEIC) are accepted.</li>
+</ul>
+<h3 id="collect">Collect</h3>
+<ul>
+<li><strong>976,000 slots</strong>, one per accepted species: subspecies and synonyms land on the same slot. Typing "Bos indicus" leads to the Cow.</li>
+<li><strong>Five rarities</strong> — common, basic, uncommon, rare, legendary — worth 5 to 150 points, once per species.</li>
+<li><strong>Fifty ranks</strong>, from "Larva" to "Go outside, seriously", each with its illustration.</li>
+<li><strong>82 achievements</strong>, each with its own 3D frog to spin, and a crystal to shatter when earned. The condition of an unearned achievement is hidden; you can reveal it.</li>
+<li><strong>The showcase</strong>: your ten finest catches, and the rank they give you.</li>
+<li><strong>Arrange your dex</strong> like a desktop: press and hold, move, resize to 2×2, pick the slot shape, hide, place empty slots. The arrangement follows you from one device to another.</li>
+<li>Three ways to read the dex: slots, groups (class → order → family, with progress), recent. Filters and sorts. <strong>Slots with the full photo</strong> or <strong>the cut-out</strong>, globally or per slot.</li>
+</ul>
+<h3 id="with-friends">With friends</h3>
+<ul>
+<li>Friend requests, activity feed, <strong>five-level reactions</strong> that give points to the photographer, favourites, captions on photos.</li>
+<li><strong>Tag friends</strong> in a photo: it counts in their dex too, without being sent twice.</li>
+<li>Leaderboard of the circle and best-catches ranking. A friend's profile, showcase, achievements, <strong>their whole dex</strong>.</li>
+<li><strong>The map</strong>: photos where they were taken, in bubbles that cluster as you zoom out. Filters by person, <strong>new things first</strong> — what your friends posted and you have not seen yet — with a strip to jump to them.</li>
+<li>Photos to locate: drop a pin, search an address, in batches.</li>
+<li>In-app notifications, grouped so they never spam: "So-and-so shared 7 finds", one line per friend.</li>
+</ul>
+<h3 id="dress-it-up">Dress it up</h3>
+<ul>
+<li><strong>Seventeen themes.</strong> System, light, dark; Hacker with its falling glyphs; Starry night and its shooting stars; Abyss, Neon, Forest, Sakura, Winter, Northern lights, Summer night with fireflies, Savanna at sunset, Watercolour, Lagoon, Nebula; Notebook and Game Boy.</li>
+<li>Backdrops run at 24 frames per second, pause in the background, and can be frozen with one setting.</li>
+<li>A loading animation that is a spinning frog.</li>
+</ul>
+<h3 id="stay-in-control">Stay in control</h3>
+<ul>
+<li>Two dates per photo — taken and published — and the choice of which one to show.</li>
+<li>Batch-delete photos without a species; <strong>release</strong> a catch (the photo goes, and the species too if it was the only one).</li>
+<li>Password without an email address, <code>scrypt</code> hashing, revocable sessions.</li>
+<li><strong>English and French</strong>, on the web and in the app, with more languages one JSON file away.</li>
+</ul>
+<hr />
+<h2 id="how-it-works">How it works</h2>
+<p>A photo goes through four stages on the server:</p>
+<ol>
+<li><strong>MegaDetector v5a</strong> looks for an animal and crops it. If it only sees a car or a landscape, the photo is rejected right away.</li>
+<li><strong>BioCLIP 2</strong> compares the crop to the catalogue — 411,626 Latin names for animals, separate catalogues for plants and fungi.</li>
+<li><strong>The observation prior</strong> corrects the raw result. On its own the model puts the roe deer neck and neck with a Chilean deer seen 404 times in history; we reweight by each species' real frequency in GBIF. Measured on the reference set: 3 correct answers out of 10 without it, 10 out of 10 with (<code>backend/outils/calibre.py</code>).</li>
+<li><strong>Grouping into slots</strong> decides. A slot is not a catalogue entry but an <em>accepted species</em>: <code>Bos taurus</code>, <code>Bos primigenius</code> (the aurochs) and <code>Bos indicus</code> (the zebu) are three catalogue entries and a single slot, the Cow. Probabilities are summed per slot before deciding, which removes the hesitation between close relatives.</li>
+</ol>
+<p>Plants first go through <strong>Pl@ntNet</strong> if the player entered their key (free, 500 identifications a day), then BioCLIP. Fungi go through <strong>FungiTastic</strong> (2,829 species, far more accurate within its scope) with a fallback to BioCLIP outside it.</p>
+<h3 id="domestic-animals">Domestic animals</h3>
+<p>Two defects added up, both fixed by <code>outils/domestiques.py</code>. <strong>The dog was filed with the wolf</strong>: GBIF treats <code>Canis lupus familiaris</code> as a subspecies of <code>Canis lupus</code>, so a labrador photo filled a "Grey wolf" slot rated rare. The dog now has its own slot. <strong>Breeds existed nowhere</strong>: the classifier is a CLIP, its catalogue does not have to be taxonomy, so 117 breeds are presented to it as plain aliases of their species. Cocker, poodle and cavalier add up on "Dog" instead of splitting.</p>
+<h3 id="silhouettes">Silhouettes</h3>
+<p>Empty slots show the silhouette of their species, from <a href="https://www.phylopic.org">PhyloPic</a>. When the exact species has no drawing, we walk up its lineage: family, order, class. Horse, donkey and zebra each have their own. About a third of the collection is CC BY or CC BY-SA: the Credits screen names every artist and their licence, and it is not decorative.</p>
+<p>Once a species is recognised, the animal is <strong>cut out</strong> (cropped to the MegaDetector box, then background removed) and that cut-out lands in the slot like a sticker.</p>
+<h3 id="rarities-and-points">Rarities and points</h3>
+<table>
+<thead>
+<tr>
+<th>Rarity</th>
+<th>Colour</th>
+<th>Points</th>
+<th>Share of the dex</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Common</td>
+<td>grey</td>
+<td>5</td>
+<td>0.1 %</td>
+</tr>
+<tr>
+<td>Basic</td>
+<td>green</td>
+<td>10</td>
+<td>46.6 %</td>
+</tr>
+<tr>
+<td>Uncommon</td>
+<td>blue</td>
+<td>25</td>
+<td>32.5 %</td>
+</tr>
+<tr>
+<td>Rare</td>
+<td>purple</td>
+<td>60</td>
+<td>15.8 %</td>
+</tr>
+<tr>
+<td>Legendary</td>
+<td>gold</td>
+<td>150</td>
+<td>5.0 %</td>
+</tr>
+</tbody>
+</table>
+<p>Rarity comes from worldwide GBIF observations, corrected for two biases: obscurity is not a feat (a weevil with eight observations is not legendary — a species must be among the best-observed <em>of its own group</em>), and livestock does not get reported (a list of domestic species brings them back to common). Result: pigeon, cow and roe deer common; golden eagle, wolf, lynx, bear rare; tiger legendary.</p>
+<h3 id="two-clients-one-api">Two clients, one API</h3>
+<p>The web client never reads the database: it goes through the API like the app, from the same origin thanks to a small relay (<code>serveur_web.py</code>). Whatever exists in one exists in the other.</p>
+<hr />
+<h2 id="host-your-own-server">Host your own server</h2>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li>A Linux box (Debian, Ubuntu, Arch… anything) with <strong>Python 3.12</strong>.</li>
+<li><strong>8 GB of RAM</strong> and <strong>20 GB of disk</strong>: catalogues and models weigh 2.3 GB, the Python dependencies 2.5 GB, the rest is for photos.</li>
+<li><strong>No GPU needed.</strong> An analysis takes about fifteen seconds on an ordinary CPU; half a second on a GPU.</li>
+<li><a href="https://docs.astral.sh/uv/"><code>uv</code></a> to manage the Python environment (<code>python3 -m venv</code> and <code>pip</code> work too).</li>
+</ul>
+<h3 id="1-the-code">1. The code</h3>
+<pre><code class="language-bash">git clone https://github.com/Raaatus/BioDex.git /opt/biodex
+cd /opt/biodex/backend
+uv venv .venv
+uv pip install -p .venv/bin/python -r requirements-moteur.txt
+</code></pre>
+<p><code>requirements-moteur.txt</code> pulls <code>torch</code> and the models: that is the heavy part. On a server without a GPU, the CPU wheel is enough and saves 2 GB of CUDA:</p>
+<pre><code class="language-bash">uv pip install -p .venv/bin/python torch torchvision --index-url https://download.pytorch.org/whl/cpu
+uv pip install -p .venv/bin/python -r requirements-moteur.txt
+</code></pre>
+<p><code>requirements.txt</code> alone installs the API without the engine: handy for client development, photos then stay "pending".</p>
+<h3 id="2-the-data">2. The data</h3>
+<p>None of this is in the repository, it is too heavy. The <strong>data pack</strong> is attached to the releases; <code>backend/donnees.manifeste.json</code> lists it with checksums:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Size</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>biodex-dex.sqlite</code></td>
+<td>436 MB</td>
+<td>the reference: 976,000 slots, 1 million aliases, silhouettes, articles — and <strong>no player</strong></td>
+</tr>
+<tr>
+<td><code>catalogue_v2.pt</code></td>
+<td>653 MB</td>
+<td>animals encoded by BioCLIP 2, plus 117 breeds</td>
+</tr>
+<tr>
+<td><code>catalogue_plantes.pt</code></td>
+<td>704 MB</td>
+<td>plants</td>
+</tr>
+<tr>
+<td><code>catalogue_champi.pt</code></td>
+<td>273 MB</td>
+<td>fungi</td>
+</tr>
+<tr>
+<td><code>catalogue_aquatique.pt</code></td>
+<td>38 MB</td>
+<td>fish, extracted from the animal catalogue</td>
+</tr>
+<tr>
+<td><code>tete_genres.pt</code></td>
+<td>2 MB</td>
+<td>the fish "genus" head, trained on FishNet</td>
+</tr>
+<tr>
+<td><code>ft_classes.json</code>, <code>ft_toxiques.json</code></td>
+<td>—</td>
+<td>FungiTastic classes and toxic species</td>
+</tr>
+<tr>
+<td><code>modeles/md_v5a.0.1.pt</code></td>
+<td>281 MB</td>
+<td>MegaDetector v5a</td>
+</tr>
+<tr>
+<td><code>silhouettes.tar</code></td>
+<td>44 MB</td>
+<td>PhyloPic silhouettes and rank badges</td>
+</tr>
+<tr>
+<td><code>sources-dex.tar</code></td>
+<td>17 MB</td>
+<td>names and observations, only useful to rebuild the dex</td>
+</tr>
+</tbody>
+</table>
+<p>One script does it all, from the release address:</p>
+<pre><code class="language-bash">.venv/bin/python outils/installe_donnees.py https://github.com/Raaatus/BioDex/releases/download/donnees-v1
+</code></pre>
+<p>It checks every checksum, unpacks the archives, and creates <code>donnees/biodex.sqlite</code> from the dex database <strong>only if there is none yet</strong> — it never overwrites a database that holds players. BioCLIP 2, FungiTastic and the background-removal model download themselves on first run, from Hugging Face.</p>
+<h3 id="3-run">3. Run</h3>
+<pre><code class="language-bash">./run.sh                         # the API, on all interfaces, port 8077
+.venv/bin/python serveur_web.py  # the web client, port 8090, relaying /api/ to the API
+</code></pre>
+<p>On first start the server creates <code>donnees/sel_serveur.txt</code> — <strong>keep it and back it up with the database</strong>: it signs sessions, losing it signs everyone out.</p>
+<p>Open <code>http://your-server:8090</code>, create an account, take a photo.</p>
+<h3 id="4-as-a-service">4. As a service</h3>
+<p>Two systemd units, in <code>/etc/systemd/system/</code>:</p>
+<pre><code class="language-ini"># biodex.service
+[Unit]
+Description=Biodex — API and recognition
+After=network.target
+
+[Service]
+User=biodex
+WorkingDirectory=/opt/biodex/backend
+Environment=BIODEX_DONNEES=/opt/biodex/backend/donnees
+Environment=BIODEX_JOURS_AVANT_PURGE=0
+ExecStart=/opt/biodex/backend/run.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<pre><code class="language-ini"># biodex-web.service
+[Unit]
+Description=Biodex — web client
+After=biodex.service
+
+[Service]
+User=biodex
+WorkingDirectory=/opt/biodex/backend
+ExecStart=/opt/biodex/backend/.venv/bin/python serveur_web.py --port 8090
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<pre><code class="language-bash">useradd -r -s /usr/sbin/nologin biodex &amp;&amp; chown -R biodex: /opt/biodex
+systemctl enable --now biodex biodex-web
+journalctl -u biodex -f
+</code></pre>
+<h3 id="5-https">5. HTTPS</h3>
+<p>The Android app and the web client need an address reachable from the phone; on the Internet, put a reverse proxy in front. With <a href="https://caddyserver.com/">Caddy</a>, certificates come by themselves:</p>
+<pre><code>dex.example.org {
+    reverse_proxy 127.0.0.1:8090
+}
+api.example.org {
+    reverse_proxy 127.0.0.1:8077
+}
+</code></pre>
+<p>The web client talks to the API through its own relay: exposing <code>api.example.org</code> is only for the Android app, which gets that address at first sign-in. Photos can weigh 20 MB: make sure the proxy accepts it (Caddy does by default; under nginx, <code>client_max_body_size 32m</code>).</p>
+<p>On a local network, without HTTPS, the app accepts an address like <code>http://192.168.x.x:8077</code> — the "server in the closet" use case.</p>
+<h3 id="-the-purge">⚠️ The purge</h3>
+<p>By default, the server <strong>deletes on start-up</strong> the photos left without a species for more than <code>BIODEX_JOURS_AVANT_PURGE</code> days (7). To keep them and settle them yourself from "To settle", set the variable to <code>0</code>, as in the unit above.</p>
+<hr />
+<h2 id="the-web-client">The web client</h2>
+<p>It is served by <code>serveur_web.py</code> and lives in <code>backend/web/</code>: a page, some scripts, no build step. It keeps the session, the language, the theme and the image cache.</p>
+<p>The web client offers everything the app does, camera included through the browser's file picker, which offers the camera on phones.</p>
+<hr />
+<h2 id="on-iphone-no-app-the-website">On iPhone: no app, the website</h2>
+<p>There is no iOS app, and there does not need to be one. The website is built to be put on the home screen:</p>
+<ol>
+<li>Open your server's address in <strong>Safari</strong> (<code>https://dex.example.org</code>).</li>
+<li>Tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</li>
+<li>Open Biodex from the icon.</li>
+</ol>
+<p>It then runs full screen, without the browser bars, with its own icon and name, and keeps you signed in. The camera, the gallery, the map and the themes all work. The address must be HTTPS for Safari to allow the camera from the home-screen version — see <a href="#5-https">HTTPS</a> above.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">On the home screen</th>
+<th style="text-align: center;">The dex</th>
+<th style="text-align: center;">The map</th>
+<th style="text-align: center;">A species</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="" src="captures/ios-accueil.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/ios-dex.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/ios-carte.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/ios-fiche.png" /></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">Friends feed</th>
+<th style="text-align: center;">Gallery</th>
+<th style="text-align: center;">Starry night theme</th>
+<th style="text-align: center;">Sakura theme</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;"><img alt="" src="captures/ios-amis.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/ios-galerie.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/ios-nuit.png" /></td>
+<td style="text-align: center;"><img alt="" src="captures/ios-sakura.png" /></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="the-android-app">The Android app</h2>
+<h3 id="install">Install</h3>
+<p>The APK is attached to every <a href="https://github.com/Raaatus/BioDex/releases/latest">release</a>. Android will ask to allow installs from outside the Play Store. On first launch the app asks for <strong>the server address</strong> — your API, <code>https://api.example.org</code> or <code>http://192.168.1.20:8077</code> — then a nickname and a password.</p>
+<h3 id="build-it-yourself">Build it yourself</h3>
+<pre><code class="language-bash">cd app
+./installe_toolchain.sh   # Flutter, JDK and Android SDK in app/.toolchain/ (~5.5 GB), nothing system-wide
+source env.sh
+./build.sh                # produces ../apk/biodex.apk
+</code></pre>
+<p><code>rm -rf app/.toolchain</code> removes everything, caches included. To sign with your own key, add an <code>android/key.properties</code>; without it the APK is signed with the debug key, which is enough to install.</p>
+<hr />
+<h2 id="configuration">Configuration</h2>
+<p>Everything is set through environment variables; nothing is hard-coded. The main ones:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BIODEX_DONNEES</code></td>
+<td><code>backend/donnees</code></td>
+<td>where database, photos and catalogues live</td>
+</tr>
+<tr>
+<td><code>BIODEX_BASE</code></td>
+<td><code>$DONNEES/biodex.sqlite</code></td>
+<td>the database</td>
+</tr>
+<tr>
+<td><code>BIODEX_PHOTOS</code>, <code>BIODEX_VIGNETTES</code>, <code>BIODEX_DECOUPES</code>, <code>BIODEX_AVATARS</code></td>
+<td>under <code>$DONNEES</code></td>
+<td>images</td>
+</tr>
+<tr>
+<td><code>BIODEX_HOTE</code>, <code>BIODEX_PORT</code></td>
+<td><code>0.0.0.0</code>, <code>8077</code></td>
+<td>the API listener</td>
+</tr>
+<tr>
+<td><code>BIODEX_SANS_MOTEUR</code></td>
+<td>—</td>
+<td><code>1</code>: the API without recognition</td>
+</tr>
+<tr>
+<td><code>BIODEX_FILS_TORCH</code></td>
+<td>8</td>
+<td>CPU threads for inference</td>
+</tr>
+<tr>
+<td><code>BIODEX_JOURS_AVANT_PURGE</code></td>
+<td>7</td>
+<td>days before photos without a species are deleted, <code>0</code> = never</td>
+</tr>
+<tr>
+<td><code>BIODEX_DUREE_SESSION_JOURS</code></td>
+<td>365</td>
+<td>session lifetime</td>
+</tr>
+<tr>
+<td><code>BIODEX_SEUIL_DETECTION</code></td>
+<td>0.20</td>
+<td>MegaDetector minimum confidence</td>
+</tr>
+<tr>
+<td><code>BIODEX_SEUIL_CASE</code>, <code>BIODEX_RATIO_CASE</code></td>
+<td>0.55, 4.0</td>
+<td>when a slot counts as "sure"</td>
+</tr>
+<tr>
+<td><code>BIODEX_PRIOR_OBS</code></td>
+<td>1.0</td>
+<td>weight of the observation prior; lower it to hunt rarities</td>
+</tr>
+<tr>
+<td><code>BIODEX_CLIP</code>, <code>BIODEX_FUNGI_MODELE</code></td>
+<td>BioCLIP 2, FungiTastic</td>
+<td>the Hugging Face models</td>
+</tr>
+<tr>
+<td><code>BIODEX_MD_POIDS</code>, <code>BIODEX_CATALOGUE*</code></td>
+<td>under <code>$DONNEES</code></td>
+<td>weights and catalogues</td>
+</tr>
+</tbody>
+</table>
+<p>The full list, with the comments explaining each threshold, is in <a href="https://github.com/Raaatus/BioDex/blob/main/backend/biodex/config.py"><code>backend/biodex/config.py</code></a>.</p>
+<hr />
+<h2 id="upgrading">Upgrading</h2>
+<p>An upgrade touches neither the photos nor the database: migrations only add. The procedure, with the safety copy, the rebuild of the database on the current schema and the rollback if needed, is in <a href="https://github.com/Raaatus/BioDex/blob/main/backend/MISE_A_JOUR.md"><code>backend/MISE_A_JOUR.md</code></a> (in French).</p>
+<hr />
+<h2 id="languages">Languages</h2>
+<p>Biodex is written in French; every interface text is a key, translated in <code>i18n/&lt;code&gt;.json</code>. The same file serves the web client, the app and the server (for the achievement and rank names it serves). English is complete. Adding a language means copying <code>en.json</code>, translating, declaring the code in two selectors and running <code>python3 i18n/genere.py</code> — all in <a href="https://github.com/Raaatus/BioDex/blob/main/i18n/README.md"><code>i18n/README.md</code></a>.</p>
+<p>Species names come from the reference data: the French name when GBIF or Wikipedia gives one, the Latin name otherwise.</p>
+<hr />
+<h2 id="rebuilding-the-data-yourself">Rebuilding the data yourself</h2>
+<p>The pack is enough to run a server. But everything in it can be rebuilt with the scripts in <code>backend/outils/</code>, for a fresher dex, another language of names, or simply to understand:</p>
+<table>
+<thead>
+<tr>
+<th>Script</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>construit_dex.py</code></td>
+<td>reads the GBIF backbone (<code>simple.txt.gz</code>) and writes one slot per accepted species, plus the aliases</td>
+</tr>
+<tr>
+<td><code>domestiques.py</code></td>
+<td>takes dog and pig out of wolf and boar, adds 117 breeds</td>
+</tr>
+<tr>
+<td><code>observations.py</code></td>
+<td>collects GBIF observation counts, for the prior and the rarities</td>
+</tr>
+<tr>
+<td><code>qualites.py</code></td>
+<td>assigns the five rarities</td>
+</tr>
+<tr>
+<td><code>noms_francais.py</code>, <code>noms_wikidata.py</code>, <code>noms_wikipedia.py</code></td>
+<td>vernacular names</td>
+</tr>
+<tr>
+<td><code>phylopic.py</code>, <code>silhouettes.py</code>, <code>silhouettes_flore.py</code></td>
+<td>silhouettes, by lineage</td>
+</tr>
+<tr>
+<td><code>catalogue_poissons.py</code>, <code>embeddings_poissons.py</code>, <code>tete_poissons.py</code></td>
+<td>the aquatic catalogue and its "genus" head</td>
+</tr>
+<tr>
+<td><code>succes_especes.py</code></td>
+<td>precomputes which slots satisfy each achievement</td>
+</tr>
+<tr>
+<td><code>badges_paliers.py</code>, <code>modeles_succes.py</code>, <code>couleurs_succes.py</code></td>
+<td>rank and achievement illustrations</td>
+</tr>
+<tr>
+<td><code>toxiques.py</code></td>
+<td>the list of species flagged as toxic</td>
+</tr>
+<tr>
+<td><code>base_neuve.py</code></td>
+<td>rebuilds the database on the current schema, keeping everything</td>
+</tr>
+<tr>
+<td><code>calibre.py</code>, <code>mesure_analyse.py</code>, <code>essai_moteur.py</code></td>
+<td>measure the engine on a set of known photos</td>
+</tr>
+</tbody>
+</table>
+<p>Each script says at the top what it expects and what it produces. Encoding the catalogues takes a GPU or a lot of patience: 411,626 names to push through BioCLIP.</p>
+<hr />
+<h2 id="useful-commands">Useful commands</h2>
+<p>Accounts, from the server:</p>
+<pre><code class="language-bash">sqlite3 donnees/biodex.sqlite &quot;SELECT id, pseudo, cree_le, vu_le FROM utilisateurs ORDER BY id;&quot;
+</code></pre>
+<p>Count what the purge would delete:</p>
+<pre><code class="language-sql">SELECT COUNT(*) FROM captures
+ WHERE case_id IS NULL AND etat NOT IN ('attente','analyse')
+   AND cree_le &lt; datetime('now', '-7 days');
+</code></pre>
+<p>Back up: the database, <code>sel_serveur.txt</code>, and the <code>photos/</code>, <code>decoupes/</code>, <code>avatars/</code> folders. The rest downloads or recomputes.</p>
+<p>Test:</p>
+<pre><code class="language-bash">cd backend &amp;&amp; .venv/bin/python -m pytest -q tests      # server
+for f in backend/web/*.js; do node --check &quot;$f&quot;; done  # web client
+cd app &amp;&amp; source env.sh &amp;&amp; flutter analyze &amp;&amp; flutter test
+</code></pre>
+<p>Make a code archive for a server that already runs: <code>cd backend &amp;&amp; ./paquet.sh --code-seul</code>.</p>
+<hr />
+<h2 id="privacy-and-security">Privacy and security</h2>
+<ul>
+<li><strong>No email address.</strong> A nickname, a password. In return, a lost password is lost: there is no recovery channel. Hashing is <code>scrypt</code> from the standard library.</li>
+<li><strong>Sessions</strong> are random tokens of which only the fingerprint, salted with <code>sel_serveur.txt</code>, is stored: the database alone cannot forge a session.</li>
+<li><strong>What others see</strong>: a friend's photo is visible only if shared, and only to accepted friends. A stranger sees no dex, no photos, no map.</li>
+<li><strong>Nothing leaves the server</strong> except what it is asked to fetch: Wikipedia articles (once per species, cached), Nominatim geocoding when searching an address, Pl@ntNet if you gave your key.</li>
+<li>SQLite in WAL mode, a single file to back up.</li>
+</ul>
+<hr />
+<h2 id="repository-layout">Repository layout</h2>
+<pre><code>backend/
+  biodex/         the server: routes/, moteur.py (recognition), db.py (migrations), schema.sql
+  web/            the web client: index.html, app.js, style.css, backdrops (fond.js), dictionaries (lang/)
+  outils/         building and measuring the data
+  tests/          pytest
+  run.sh          starts the API
+  serveur_web.py  serves the web client and relays /api/
+  paquet.sh       builds a deployment archive
+  MISE_A_JOUR.md  upgrading without losing anything
+app/
+  lib/            the Flutter app: ecrans/, widgets/, themes.dart, i18n.dart
+  assets/         3D achievement models, loading animation, dictionaries
+  build.sh, env.sh, installe_toolchain.sh
+i18n/             translations, and the generator
+docs/             the website (GitHub Pages) and the screenshots
+</code></pre>
+<p>Code, comments and identifiers are in French. Contributions in English are welcome; see below.</p>
+<hr />
+<h2 id="contributing">Contributing</h2>
+<p>Issues and pull requests are welcome; <a href="https://github.com/Raaatus/BioDex/blob/main/CONTRIBUTING.md"><code>CONTRIBUTING.md</code></a> says how. Tests run in CI, and a <code>v*</code> tag builds the APK and the server archive as a release.</p>
+<hr />
+<h2 id="credits-and-licence">Credits and licence</h2>
+<p>Biodex is released under the <a href="https://github.com/Raaatus/BioDex/blob/main/LICENSE">MIT licence</a>.</p>
+<p>It would not exist without:</p>
+<ul>
+<li><a href="https://www.gbif.org/">GBIF</a> — the taxonomic backbone and the observations;</li>
+<li><a href="https://www.phylopic.org/">PhyloPic</a> and its contributors — the silhouettes, under CC0, CC BY and CC BY-SA (the Credits screen names them one by one);</li>
+<li><a href="https://fr.wikipedia.org/">Wikipedia</a> and <a href="https://commons.wikimedia.org/">Wikimedia Commons</a> — articles and their illustrations;</li>
+<li><a href="https://github.com/microsoft/CameraTraps">MegaDetector</a> — detection;</li>
+<li><a href="https://imageomics.github.io/bioclip-2/">BioCLIP 2</a> — recognition;</li>
+<li><a href="https://plantnet.org/">Pl@ntNet</a> — plants;</li>
+<li><a href="https://huggingface.co/BVRA">FungiTastic</a> — fungi;</li>
+<li><a href="https://fishnet-2023.github.io/">FishNet</a> — fish;</li>
+<li><a href="https://nominatim.org/">Nominatim</a>, OpenStreetMap, Esri, OpenTopoMap — the map;</li>
+<li><a href="https://www.meshy.ai/">Meshy</a> — the 3D frogs of the achievements.</li>
+</ul>
+<hr />
+<h2 id="résumé-en-français">Résumé en français</h2>
+<p><strong>Biodex est un Pokédex du vivant, libre et auto-hébergé.</strong> On photographie un animal, une plante ou un champignon ; ton propre serveur le reconnaît parmi près d'un million d'espèces et remplit la case correspondante dans ta collection. Tes amis font pareil sur le même serveur, et vous comparez : fil d'activité, réactions, classement, carte des trouvailles avec les nouveautés d'abord, cinquante rangs, 82 succès avec leur grenouille en 3D, une vitrine, dix-sept thèmes à décor animé.</p>
+<p>Pas de serveur central, pas de compte chez qui que ce soit : chaque bande héberge le sien. Pas d'adresse mail, pas de pistage. Les photos restent chez toi.</p>
+<ul>
+<li><strong>Serveur</strong> : Python 3.12, FastAPI, SQLite. Reconnaissance par MegaDetector, BioCLIP 2, Pl@ntNet et FungiTastic. Tourne sur processeur (une quinzaine de secondes par photo).</li>
+<li><strong>Site web</strong> : HTML/JS sans framework, pensé pour le téléphone. <strong>Sur iPhone, pas d'application, pas besoin</strong> : Safari → Partager → Sur l'écran d'accueil, et le site devient l'application.</li>
+<li><strong>Application Android</strong> : Flutter, avec l'appareil photo. APK sur la page des <a href="https://github.com/Raaatus/BioDex/releases/latest">releases</a>.</li>
+<li><strong>Langues</strong> : français (source) et anglais, au choix dans les réglages ; une langue de plus, c'est un fichier JSON (voir <a href="https://github.com/Raaatus/BioDex/blob/main/i18n/README.md"><code>i18n/README.md</code></a>).</li>
+</ul>
+<p>Démarrage rapide :</p>
+<pre><code class="language-bash">git clone https://github.com/Raaatus/BioDex.git &amp;&amp; cd BioDex/backend
+uv venv .venv &amp;&amp; uv pip install -p .venv/bin/python -r requirements-moteur.txt
+.venv/bin/python outils/installe_donnees.py https://github.com/Raaatus/BioDex/releases/download/donnees-v1
+./run.sh &amp;                        # l'API sur :8077
+.venv/bin/python serveur_web.py   # le site sur :8090
+</code></pre>
+<p>Le pack de données (base des espèces sans aucun joueur, catalogues encodés, poids du détecteur, silhouettes — 2,3 Go) est attaché aux releases ; <code>backend/donnees.manifeste.json</code> le liste avec ses empreintes. Tout ce qu'il contient se reconstruit avec les scripts de <code>backend/outils/</code>.</p>
+<p>Mettre <code>BIODEX_JOURS_AVANT_PURGE=0</code> pour garder les photos sans espèce au lieu de les voir effacées après sept jours. Sauvegarder <code>biodex.sqlite</code>, <code>sel_serveur.txt</code> et les dossiers <code>photos/</code>, <code>decoupes/</code>, <code>avatars/</code>. La mise à jour sans rien perdre est décrite dans <a href="https://github.com/Raaatus/BioDex/blob/main/backend/MISE_A_JOUR.md"><code>backend/MISE_A_JOUR.md</code></a>.</p>
+<p>Licence MIT. Les données et modèles gardent leurs licences — GBIF, PhyloPic (CC0 / CC BY / CC BY-SA, crédités dans l'application), Wikipédia, MegaDetector, BioCLIP 2, Pl@ntNet, FungiTastic.</p>
+    </article>
+  </div>
+</div>
+<footer>Generated from <a href="https://github.com/Raaatus/BioDex/blob/main/README.md">README.md</a> by <code>docs/genere.py</code>. Biodex is released under the MIT licence.</footer>
+<script src="fond.js"></script>
+<script src="site.js"></script>
+</body>
+</html>
