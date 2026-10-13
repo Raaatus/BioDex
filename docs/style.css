@@ -8,7 +8,6 @@
   --largeur: 1180px; --gouttiere: 24px;
 }
 * { box-sizing: border-box; }
-[hidden] { display: none !important; }
 html { scroll-behavior: smooth; scroll-padding-top: 84px; }
 body { margin: 0; font: 16px/1.6 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--texte); background: var(--fond); overflow-x: hidden; }
 a { color: var(--accent); text-decoration: none; }
@@ -50,12 +49,8 @@ body.decor-clair::after { background: linear-gradient(180deg, rgba(7, 11, 22, .4
 .sondage { max-width: 640px; margin: 18px auto 0; padding: 14px 18px 12px; border-radius: 18px; border: 1px solid rgba(93, 242, 166, .3); background: rgba(93, 242, 166, .07); backdrop-filter: blur(8px); }
 .sondage p { margin: 0 0 10px; color: var(--doux); font-size: 14.5px; line-height: 1.5; }
 .sondage p b { color: var(--texte); }
-.sondage .vote { border: 0; cursor: pointer; font: inherit; display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: linear-gradient(135deg, var(--vert), #2fd3a0); color: #04251a; font-weight: 800; font-size: 14px; box-shadow: 0 8px 24px rgba(93, 242, 166, .25); transition: transform .15s; }
+.sondage .vote { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px; background: linear-gradient(135deg, var(--vert), #2fd3a0); color: #04251a; font-weight: 800; font-size: 14px; box-shadow: 0 8px 24px rgba(93, 242, 166, .25); transition: transform .15s; }
 .sondage .vote:hover { text-decoration: none; transform: translateY(-2px); }
-.sondage .vote.fait { background: rgba(255, 255, 255, .1); color: var(--texte); box-shadow: none; cursor: default; }
-.sondage .captcha { display: flex; justify-content: center; margin-top: 10px; }
-.sondage .etat { display: block; margin-top: 6px; color: var(--accent2); font-size: 12.5px; }
-.sondage .etat:empty { display: none; }
 .sondage .vote [data-compte] { padding: 2px 9px; border-radius: 999px; background: rgba(0, 0, 0, .18); font-weight: 700; font-size: 12.5px; }
 .sondage .vote [data-compte]:empty { display: none; }
 .sondage small { display: block; margin-top: 8px; color: var(--sourd); font-size: 12px; }
