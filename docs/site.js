@@ -135,28 +135,51 @@
   }
 
   // ── le sondage : un serveur public ? ─────────────────────────────────────
-  // Le site est statique, sans serveur derrière : le vote est un 👍 sur une
-  // issue GitHub. Un compte = une voix, pas de robots, aucune adresse IP
-  // gardée ici. On lit le compte par l'API publique, et on le garde dix
-  // minutes en cache pour ne pas user la limite de soixante appels par heure.
-  const SONDAGE = { depot: 'Raaatus/BioDex', issue: 1 };
-  async function initSondage() {
-    const zone = document.querySelector('.sondage [data-compte]');
-    if (!zone) return;
-    const cle = 'biodex_sondage';
-    try {
-      const c = JSON.parse(localStorage.getItem(cle) || 'null');
-      if (c && Date.now() - c.t < 10 * 60 * 1000) { montre(c.n); return; }
-    } catch (_) {}
-    try {
-      const r = await fetch(`https://api.github.com/repos/${SONDAGE.depot}/issues/${SONDAGE.issue}`, { headers: { Accept: 'application/vnd.github+json' } });
-      if (!r.ok) throw new Error(r.status);
-      const n = (await r.json()).reactions?.['+1'] ?? 0;
-      try { localStorage.setItem(cle, JSON.stringify({ n, t: Date.now() })); } catch (_) {}
-      montre(n);
-    } catch (_) { zone.textContent = ''; }
-    function montre(n) {
-      zone.textContent = n === 0 ? 'be the first' : n === 1 ? '1 person so far' : `${n} people so far`;
+  // Le site est statique ; le compteur vit dans un petit Cloudflare Worker
+  // (sondage/worker.js) gardé par Turnstile, le captcha gratuit de Cloudflare.
+  // Une voix par adresse IP, décidée côté worker. La page se souvient juste
+  // qu'on a voté, pour ne pas reproposer le bouton.
+  function initSondage() {
+    const bloc = document.querySelector('.sondage');
+    if (!bloc) return;
+    const url = bloc.dataset.url, cle = bloc.dataset.cle;
+    const compte = bloc.querySelector('[data-compte]');
+    const bouton = bloc.querySelector('.vote');
+    const widget = bloc.querySelector('.captcha');
+    const etat = bloc.querySelector('.etat');
+    if (!url || !cle) { bouton.hidden = true; compte.textContent = ''; return; }
+
+    const montre = (n) => { compte.textContent = n === 0 ? 'be the first' : n === 1 ? '1 vote so far' : `${n} votes so far`; };
+    const dejaVote = () => { bouton.classList.add('fait'); bouton.textContent = '👍 Thanks — counted'; bouton.disabled = true; };
+    fetch(url).then((r) => r.json()).then((d) => montre(d.total)).catch(() => { compte.textContent = ''; });
+    try { if (localStorage.getItem('biodex_sondage_vote')) dejaVote(); } catch (_) {}
+
+    let rendu = false;
+    bouton.addEventListener('click', () => {
+      if (bouton.disabled) return;
+      // Le captcha ne se charge qu'au clic : pas de script tiers pour qui ne vote pas.
+      widget.hidden = false;
+      if (rendu) return;
+      rendu = true;
+      const sc = document.createElement('script');
+      sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      sc.onload = () => turnstile.render(widget, { sitekey: cle, theme: 'dark', callback: envoie });
+      document.head.appendChild(sc);
+    });
+
+    async function envoie(token) {
+      etat.textContent = '';
+      try {
+        const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }) });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.erreur || r.status);
+        montre(d.total);
+        dejaVote();
+        try { localStorage.setItem('biodex_sondage_vote', '1'); } catch (_) {}
+        etat.textContent = d.deja ? 'This address had already voted.' : '';
+      } catch (e) {
+        etat.textContent = e.message === 'captcha' ? 'The captcha did not pass — try again.' : 'Could not reach the counter. Try later.';
+      } finally { widget.hidden = true; }
     }
   }
 

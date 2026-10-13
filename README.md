@@ -472,6 +472,7 @@ app/
   build.sh, env.sh, installe_toolchain.sh
 i18n/             translations, and the generator
 docs/             the website (GitHub Pages) and the screenshots
+sondage/          the poll counter on the website: a Cloudflare Worker behind Turnstile
 ```
 
 Code, comments and identifiers are in French. Contributions in English are welcome; see below.
