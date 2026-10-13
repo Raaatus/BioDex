@@ -1547,6 +1547,7 @@ function vueFiche() {
           ${f.regne ? pastilleRegne(f.regne) : ''}
           ${f.toxique ? `<span class="pastille toxique">${t('☠ Toxique')}</span>` : ''}
         </div>
+        ${f.regne === 'champignon' ? avertissementChampignon() : ''}
         ${(f.alias || []).filter((a) => a !== f.latin).length ? `
           <!-- Les autres noms latins que la case regroupe : c'est ce qui
                explique qu'une recherche « Bos indicus » tombe sur la Vache. -->
@@ -1612,6 +1613,9 @@ function vueCapture() {
           <p class="doux" style="text-align:center;font-size:12.5px;margin-top:10px">
             ${t('Choisis le règne avant : c\'est lui qui décide du moteur d\'analyse.')}
           </p>
+          <!-- L'avertissement se lit avant de photographier : après le
+               verdict, on a déjà décidé ce qu'on voulait entendre. -->
+          ${(etat.regne || 'animal') === 'champignon' ? avertissementChampignon() : ''}
         </div>`}
       ${enAttenteHTML()}
     </div>`;
@@ -1766,15 +1770,18 @@ function carteAnalyse(c) {
          ${pistes ? t('Choisis toi-même dans la liste.')
                   : t('Rien de reconnaissable sur cette photo.')}</p>`;
 
+  const champignon = c.regne === 'champignon' || c.case?.regne === 'champignon'
+    || (c.top || []).some((x) => x.regne === 'champignon');
   return `
     <div class="analyse">
       <img class="grande" src="${image(photoDePiece(c))}" alt="">
+      ${champignon ? avertissementChampignon() : ''}
       ${entete}
       ${quandEtOu(c)}
       ${avecQui(c)}
       ${c.note ? `<p class="doux" style="font-size:12.5px">${echappe(c.note)}</p>` : ''}
       ${pistes ? `<p style="font-size:12.5px;font-weight:700;margin:14px 0 6px">
-        ${c.case_id ? "Ce n'est pas ça ? Choisis :" : t('Les pistes du moteur :')}
+        ${c.case_id ? t('Ce n\'est pas ça ? Choisis :') : t('Les pistes du moteur :')}
         </p>${pistes}` : ''}
       <!-- Le détourage reste offert même quand l'espèce est trouvée. Il était
            réservé aux échecs, si bien qu'une fois la bête reconnue on ne
@@ -1782,11 +1789,11 @@ function carteAnalyse(c) {
            que la vignette du dex montre l'animal et non la branche. -->
       <button class="secondaire" style="width:100%;margin-top:14px"
               onclick="ouvreEditeur(${c.id})">
-        ${c.case_id ? '✂ Détourer' : t('✂ Retoucher et réessayer')}</button>
+        ${c.case_id ? t('✂ Détourer') : t('✂ Retoucher et réessayer')}</button>
       <div style="display:flex;gap:10px;margin-top:14px">
         <button class="secondaire" style="flex:1"
                 onclick="ouvreChoixEspece('${echappe(c.verdict || '')}')">
-          ${c.case_id ? "Ce n'est pas ça" : t('Choisir l\'espèce')}</button>
+          ${c.case_id ? t('Ce n\'est pas ça') : t('Choisir l\'espèce')}</button>
         ${c.case_id ? `<button class="secondaire" style="flex:1"
           onclick="choisitEspece(${c.id}, null)">${t('Détacher')}</button>` : ''}
       </div>
