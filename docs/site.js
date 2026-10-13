@@ -82,6 +82,8 @@
     }, { rootMargin: '0px 0px -8% 0px', threshold: .1 });
     // Un léger décalage entre voisins, pour que la grille se déplie.
     elements.forEach((e, i) => { e.style.transitionDelay = `${(i % 4) * 60}ms`; obs.observe(e); });
+    // Filet : quoi qu'il arrive à l'observateur, rien ne reste invisible.
+    setTimeout(() => elements.forEach((e) => e.classList.add('visible')), 2500);
 
     for (const c of document.querySelectorAll('.carte')) {
       c.addEventListener('pointermove', (e) => {

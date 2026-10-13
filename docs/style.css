@@ -92,6 +92,7 @@ section .intro { color: var(--doux); font-size: 17px; max-width: 68ch; margin: 0
 section .entete { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 20px; }
 section .entete .intro { margin-bottom: 0; }
 section .entete + * { margin-top: 30px; }
+.indice { display: none; color: var(--sourd); font-size: 12px; margin: -6px 0 0; text-align: right; }
 
 /* ce qui apparaît en défilant */
 .apparait { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s cubic-bezier(.2, .8, .2, 1); }
@@ -218,15 +219,28 @@ footer .bas a { display: inline; }
   footer .dedans { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 640px) {
-  .scene { padding-bottom: 10px; }
+  /* Le téléphone : les trois restent, en éventail serré. */
+  .scene { padding-bottom: 84px; margin-top: 6px; }
+  .scene .tel.gauche, .scene .tel.droite { display: block; width: 36vw; margin: 0 -15vw; }
+  .scene .tel.centre { width: 50vw; }
+  .scene::before { height: 70%; }
+  /* Les grilles de cartes deviennent des bandes qu'on fait glisser : neuf
+     cartes empilées, c'est un mur ; côte à côte, c'est un carrousel. */
+  .cartes, .etapes, .telechargements { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 calc(-1 * var(--gouttiere)); padding: 18px var(--gouttiere) 14px; scrollbar-width: none; }
+  .cartes::-webkit-scrollbar, .etapes::-webkit-scrollbar, .telechargements::-webkit-scrollbar { display: none; }
+  .carte, .etape { flex: 0 0 78vw; scroll-snap-align: center; }
+  .cartes.trois .carte { flex-basis: 68vw; }
+  .telechargements .carte { flex-basis: 82vw; }
+  .carte .ico { width: 40px; height: 40px; font-size: 21px; margin-bottom: 10px; }
+  .carte p, .etape p { font-size: 14px; }
+  .apparait { opacity: 1; transform: none; transition: none; }
+  .indice { display: block; }
   :root { --gouttiere: 16px; }
   .heros { padding-top: 44px; }
   .heros .chiffres { border-radius: 20px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
   .heros .chiffres div { border-right: 0; border-bottom: 1px solid var(--bordure); padding: 12px 14px; }
   .heros .chiffres div:nth-child(odd) { border-right: 1px solid var(--bordure); }
   .heros .chiffres div:nth-last-child(-n+2) { border-bottom: 0; }
-  .scene .tel.gauche, .scene .tel.droite { display: none; }
-  .scene .tel.centre { width: 72vw; }
   section { padding: 52px var(--gouttiere) 16px; }
   section .entete { grid-template-columns: 1fr; }
   .galerie { grid-template-columns: repeat(2, 1fr); gap: 14px 10px; }
