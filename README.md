@@ -2,7 +2,7 @@
   <img src="docs/captures/dex.png" width="200" alt="The dex">
   <img src="docs/captures/carte.png" width="200" alt="The map">
   <img src="docs/captures/succes.png" width="200" alt="Achievements">
-  <img src="docs/captures/theme-nuit.png" width="200" alt="Starry night theme">
+  <img src="docs/captures/ios-dex.png" width="200" alt="On an iPhone home screen">
 </p>
 
 <h1 align="center">Biodex</h1>
@@ -63,7 +63,7 @@ Two clients, one server:
 
 ## Screenshots
 
-The web client, on a phone. The Android app shows the same screens. The interface is in French here; switch to English in the settings.
+The web client, on a phone. The Android app shows the same screens, and the [iPhone section](#on-iphone-no-app-the-website) shows it installed on a home screen. The interface is in French here; switch to English in the settings.
 
 | The dex | A species | Arranging the dex | The map |
 |:-:|:-:|:-:|:-:|
@@ -320,6 +320,14 @@ There is no iOS app, and there does not need to be one. The website is built to 
 3. Open Biodex from the icon.
 
 It then runs full screen, without the browser bars, with its own icon and name, and keeps you signed in. The camera, the gallery, the map and the themes all work. The address must be HTTPS for Safari to allow the camera from the home-screen version — see [HTTPS](#5-https) above.
+
+| On the home screen | The dex | The map | A species |
+|:-:|:-:|:-:|:-:|
+| ![](docs/captures/ios-accueil.png) | ![](docs/captures/ios-dex.png) | ![](docs/captures/ios-carte.png) | ![](docs/captures/ios-fiche.png) |
+
+| Friends feed | Gallery | Starry night theme | Sakura theme |
+|:-:|:-:|:-:|:-:|
+| ![](docs/captures/ios-amis.png) | ![](docs/captures/ios-galerie.png) | ![](docs/captures/ios-nuit.png) | ![](docs/captures/ios-sakura.png) |
 
 ---
 
