@@ -583,6 +583,17 @@ const Fond = (() => {
     effet.init();
   }
 
+  /* Sur un téléphone, la barre du navigateur se replie en défilant et la
+   * fenêtre gagne quelques dizaines de pixels : un « resize » pour rien, qui
+   * refaisait tout le décor — étoiles replacées, feuilles revenues au début,
+   * la scène sautait. Une variation de hauteur seule, et modeste, est
+   * ignorée : la toile s'étire d'un rien, ça ne se voit pas. Un changement de
+   * largeur (rotation) ou une vraie variation de hauteur refait le décor. */
+  function surResize() {
+    if (innerWidth === L && Math.abs(innerHeight - H) < H * .25) return;
+    dimensionne();
+  }
+
   function trame(t) {
     if (!actif) return;
     boucle = requestAnimationFrame(trame);
@@ -606,7 +617,7 @@ const Fond = (() => {
     document.documentElement.dataset.fond = nom;
     ctx = toile.getContext('2d', { alpha: false });
     dimensionne();
-    addEventListener('resize', dimensionne);
+    addEventListener('resize', surResize);
     document.addEventListener('visibilitychange', visibilite);
     // Animations coupées : quelques images pour poser le décor, puis plus rien.
     if (sansAnimation()) {
@@ -627,7 +638,7 @@ const Fond = (() => {
     if (!toile) return;
     actif = false;
     cancelAnimationFrame(boucle);
-    removeEventListener('resize', dimensionne);
+    removeEventListener('resize', surResize);
     document.removeEventListener('visibilitychange', visibilite);
     toile.remove();
     toile = null; ctx = null; effet = null;
