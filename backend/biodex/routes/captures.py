@@ -208,7 +208,7 @@ async def depose(photo: UploadFile = File(...),
         raise HTTPException(400, f"Règne inconnu : {regne!r}.")
     blob = await photo.read()
     try:
-        fichier, vignette, meta = images.enregistre(blob)
+        fichier, vignette, meta = images.enregistre(blob, u["id"])
     except images.ImageInvalide as e:
         raise HTTPException(400, str(e)) from e
 
@@ -242,7 +242,7 @@ async def depose(photo: UploadFile = File(...),
     nom_analyse = None
     if analyse is not None:
         try:
-            nom_analyse, _, _ = images.enregistre(await analyse.read())
+            nom_analyse, _, _ = images.enregistre(await analyse.read(), u["id"])
         except images.ImageInvalide as e:
             raise HTTPException(400, f"Image d'analyse : {e}") from e
 
@@ -613,7 +613,7 @@ async def reprend(capture_id: int, photo: UploadFile = File(...),
 
     blob = await photo.read()
     try:
-        fichier, vignette, _ = images.enregistre(blob)
+        fichier, vignette, _ = images.enregistre(blob, u["id"])
     except images.ImageInvalide as e:
         raise HTTPException(400, str(e)) from e
 
@@ -886,7 +886,8 @@ def decoupe(requete: Request, capture_id: int, taille: int | None = Query(defaul
     # Une découpe se refait : le joueur peut reprendre son tracé au doigt. Un
     # jour de cache, et l'empreinte change dès que le fichier est réécrit, donc
     # le nouveau tracé s'affiche immédiatement.
-    return cache.fichier(requete, chemin, "image/png", cache.COURT)
+    type_ = "image/webp" if chemin.suffix.lower() == ".webp" else "image/png"
+    return cache.fichier(requete, chemin, type_, cache.COURT)
 
 
 @routeur.get("/captures/{capture_id}/photo")

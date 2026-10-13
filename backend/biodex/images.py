@@ -48,6 +48,26 @@ def _accepte_heic() -> None:
         pass
 
 
+# Les découpes sont en WebP : un PNG de 512 px pesait 160 Ko pour une image
+# qui en vaut 30 — le PNG ne sait pas compresser une photo, seulement un aplat.
+# WebP garde la transparence et divise le poids par cinq.
+DECOUPE_SUFFIXE = ".webp"
+
+
+def dossier_de(utilisateur_id: int | None) -> str:
+    """Le sous-dossier d'une photo : le joueur, puis le mois.
+
+    Un dossier plat de dix mille fichiers n'est pas lent, il est illisible :
+    impossible de voir, sauvegarder ou effacer les photos d'une personne. Ici
+    `photos/12/2026-10/…` dit à qui et à quand sans ouvrir la base. Les noms
+    restent uniques dans tout l'arbre, le cache des miniatures peut donc rester
+    à plat.
+    """
+    if utilisateur_id is None:
+        return ""
+    return f"{utilisateur_id}/{datetime.datetime.now():%Y-%m}"
+
+
 def _nom_unique(suffixe: str) -> str:
     horo = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     return f"{horo}-{secrets.token_hex(6)}{suffixe}"
@@ -105,10 +125,11 @@ class Metadonnees:
         self.lon = lon
 
 
-def enregistre(blob: bytes) -> tuple[str, str, Metadonnees]:
+def enregistre(blob: bytes, utilisateur_id: int | None = None) -> tuple[str, str, Metadonnees]:
     """Range une photo reçue et sa vignette.
 
-    Renvoie (nom du fichier photo, nom de la vignette, métadonnées lues).
+    Renvoie (chemin relatif de la photo, celui de la vignette, métadonnées
+    lues). Le chemin est relatif au dossier des photos : `12/2026-10/….jpg`.
     """
     from PIL import Image, ImageOps, UnidentifiedImageError
     _accepte_heic()
@@ -134,7 +155,10 @@ def enregistre(blob: bytes) -> tuple[str, str, Metadonnees]:
     img = ImageOps.exif_transpose(img).convert("RGB")
 
     config.prepare_dossiers()
-    nom = _nom_unique(".jpg")
+    sous = dossier_de(utilisateur_id)
+    nom = f"{sous}/{_nom_unique('.jpg')}" if sous else _nom_unique(".jpg")
+    (config.PHOTOS / nom).parent.mkdir(parents=True, exist_ok=True)
+    (config.VIGNETTES / nom).parent.mkdir(parents=True, exist_ok=True)
 
     grande = img.copy()
     grande.thumbnail((config.COTE_MAX_PHOTO, config.COTE_MAX_PHOTO), Image.LANCZOS)
@@ -211,9 +235,9 @@ def decoupe(nom_photo: str, bbox: tuple[float, float, float, float] | None) -> s
             return None
 
         sortie.thumbnail((config.COTE_DECOUPE, config.COTE_DECOUPE), Image.LANCZOS)
-        nom = pathlib.Path(nom_photo).with_suffix(".png").name
-        config.DECOUPES.mkdir(parents=True, exist_ok=True)
-        sortie.save(config.DECOUPES / nom, "PNG", optimize=True)
+        nom = nom_decoupe(nom_photo)
+        (config.DECOUPES / nom).parent.mkdir(parents=True, exist_ok=True)
+        sortie.save(config.DECOUPES / nom, "WEBP", quality=86, method=6)
         return nom
     except Exception as e:
         print(f"détourage impossible pour {nom_photo} : {type(e).__name__}: {e}",
@@ -261,9 +285,9 @@ def decoupe_a_la_main(nom_photo: str, blob: bytes) -> str:
     sortie = _affine_au_modele(sortie)
 
     sortie.thumbnail((config.COTE_DECOUPE, config.COTE_DECOUPE), Image.LANCZOS)
-    nom = pathlib.Path(nom_photo).with_suffix(".png").name
-    config.DECOUPES.mkdir(parents=True, exist_ok=True)
-    sortie.save(config.DECOUPES / nom, "PNG", optimize=True)
+    nom = nom_decoupe(nom_photo)
+    (config.DECOUPES / nom).parent.mkdir(parents=True, exist_ok=True)
+    sortie.save(config.DECOUPES / nom, "WEBP", quality=86, method=6)
     return nom
 
 
@@ -373,6 +397,31 @@ def supprime_avatar(nom: str) -> None:
 TAILLES_MINIATURE = (96, 160, 256)
 
 
+def nom_decoupe(nom_photo: str) -> str:
+    """Le chemin relatif de la découpe d'une photo : même dossier, même nom,
+    en WebP."""
+    return str(pathlib.PurePosixPath(nom_photo).with_suffix(DECOUPE_SUFFIXE))
+
+
+def _variantes(nom: str) -> set[str]:
+    """Les noms sous lesquels une image et ses dérivés peuvent exister : le
+    sien, et la découpe en WebP comme en PNG (le format d'avant)."""
+    p = pathlib.PurePosixPath(nom)
+    return {nom, str(p.with_suffix(".webp")), str(p.with_suffix(".png"))}
+
+
+def _retire_dossiers_vides(chemin: pathlib.Path, racine: pathlib.Path) -> None:
+    """Après une suppression, le mois puis le joueur disparaissent s'ils sont
+    vides : un arbre de dossiers creux ne dit plus rien."""
+    try:
+        for d in chemin.parents:
+            if not d.is_relative_to(racine) or d == racine:
+                break
+            d.rmdir()
+    except OSError:
+        pass
+
+
 def miniature(source: pathlib.Path, taille: int) -> pathlib.Path:
     """Renvoie une version réduite du fichier, fabriquée une fois puis gardée.
 
@@ -385,6 +434,7 @@ def miniature(source: pathlib.Path, taille: int) -> pathlib.Path:
 
     taille = min(TAILLES_MINIATURE, key=lambda t: abs(t - taille))
     cache = config.DONNEES / "miniatures" / str(taille)
+    # Le cache reste à plat : les noms sont uniques dans tout l'arbre.
     cible = cache / source.name
     if cible.exists():
         return cible
@@ -393,9 +443,11 @@ def miniature(source: pathlib.Path, taille: int) -> pathlib.Path:
     with Image.open(source) as img:
         img = img.copy()
         img.thumbnail((taille, taille), Image.LANCZOS)
-        # On garde le PNG (donc la transparence) pour les découpes, et le JPEG
-        # pour tout le reste, qui n'en a pas besoin.
-        if source.suffix.lower() == ".png":
+        # La transparence des découpes est gardée — en WebP, et en PNG pour
+        # celles d'avant la conversion. Le reste part en JPEG.
+        if source.suffix.lower() == ".webp":
+            img.save(cible, "WEBP", quality=84, method=6)
+        elif source.suffix.lower() == ".png":
             img.save(cible, "PNG", optimize=True)
         else:
             img.convert("RGB").save(cible, "JPEG", quality=82, optimize=True)
@@ -410,12 +462,11 @@ def oublie_miniatures(nom: str) -> None:
     nettoyage, la grille continuerait à servir l'ancien tracé depuis le cache,
     et le joueur croirait son geste perdu.
     """
-    png = pathlib.Path(nom).with_suffix(".png").name
     for taille in TAILLES_MINIATURE:
-        for fichier in {nom, png}:
+        for fichier in _variantes(nom):
             try:
-                (config.DONNEES / "miniatures" / str(taille) / fichier).unlink(
-                    missing_ok=True)
+                (config.DONNEES / "miniatures" / str(taille)
+                 / pathlib.PurePosixPath(fichier).name).unlink(missing_ok=True)
             except OSError:
                 pass
 
@@ -424,22 +475,18 @@ def supprime(nom: str) -> None:
     for dossier in (config.PHOTOS, config.VIGNETTES):
         try:
             (dossier / nom).unlink(missing_ok=True)
+            _retire_dossiers_vides(dossier / nom, dossier)
         except OSError:
             pass
     # Et les miniatures dérivées, sinon elles survivraient à la photo.
-    png = pathlib.Path(nom).with_suffix(".png").name
-    for taille in TAILLES_MINIATURE:
-        for fichier in (nom, png):
-            try:
-                (config.DONNEES / "miniatures" / str(taille) / fichier).unlink(
-                    missing_ok=True)
-            except OSError:
-                pass
-    # La découpe porte le même nom, en .png
-    try:
-        (config.DECOUPES / pathlib.Path(nom).with_suffix(".png").name).unlink(missing_ok=True)
-    except OSError:
-        pass
+    oublie_miniatures(nom)
+    # La découpe porte le même nom — en WebP, ou en PNG pour les anciennes.
+    for fichier in _variantes(nom) - {nom}:
+        try:
+            (config.DECOUPES / fichier).unlink(missing_ok=True)
+            _retire_dossiers_vides(config.DECOUPES / fichier, config.DECOUPES)
+        except OSError:
+            pass
 
 
 def chemin_sur(dossier: pathlib.Path, nom: str) -> pathlib.Path:

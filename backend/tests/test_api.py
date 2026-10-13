@@ -207,7 +207,7 @@ def test_photo_heic_iphone_acceptee(client):
     from biodex import config
     d = client.get(f"/captures/{r.json()['id']}", headers=entete(j)).json()
     assert d["vignette"]
-    with Image.open(next(config.VIGNETTES.glob("*.jpg"))) as im:
+    with Image.open(next(config.VIGNETTES.rglob("*.jpg"))) as im:
         assert im.format == "JPEG"
 
 
@@ -1909,3 +1909,96 @@ def test_les_donnees_servies_suivent_accept_language(client):
     s = client.get("/succes", headers={**entete(j["jeton"]), "Accept-Language": "en"}).json()
     noms = {x["nom"] for x in s.get("succes", s if isinstance(s, list) else [])}
     assert "First step" in noms
+
+
+def test_les_photos_sont_rangees_par_joueur_et_par_mois(client):
+    """Une photo reçue se range dans photos/<joueur>/<AAAA-MM>/, et la découpe
+    tracée au doigt la suit, en WebP et dans le même dossier."""
+    import datetime
+    from biodex import config
+    j = client.post("/inscription", json={"pseudo": "Rangeur", "mdp": "motdepasse1"}).json()
+    r = client.post("/captures", headers=entete(j["jeton"]),
+                    files={"photo": ("p.jpg", _photo(), "image/jpeg"),
+                           "decoupe": ("d.png", _decoupe_png(), "image/png")},
+                    data={"lat": "48.85", "lon": "2.35"})
+    assert r.status_code == 202, r.text
+    row = db.lit("SELECT fichier, vignette, decoupe FROM captures WHERE id = ?", (r.json()["id"],))[0]
+    mois = datetime.datetime.now().strftime("%Y-%m")
+    assert row["fichier"].startswith(f"{j['id']}/{mois}/") and row["fichier"].endswith(".jpg")
+    assert row["vignette"] == row["fichier"]
+    assert row["decoupe"] == row["fichier"][:-4] + ".webp"
+    assert (config.PHOTOS / row["fichier"]).exists() and (config.DECOUPES / row["decoupe"]).exists()
+    rep = client.get(f"/captures/{r.json()['id']}/decoupe", headers=entete(j["jeton"]))
+    assert rep.status_code == 200 and rep.headers["content-type"] == "image/webp"
+    # Supprimer la photo retire fichiers et dossiers devenus vides. On fige
+    # d'abord son état : dans la suite complète, le moteur peut l'avoir prise
+    # en analyse, et une photo en cours d'analyse ne se supprime pas.
+    from biodex.moteur import Resultat, file as file_moteur
+    file_moteur._enregistre(r.json()["id"], j["id"], Resultat(etat="rejet", verdict="Rien"))
+    assert client.delete(f"/captures/{r.json()['id']}", headers=entete(j["jeton"])).status_code == 204
+    assert not (config.PHOTOS / row["fichier"]).exists()
+    assert not (config.VIGNETTES / row["vignette"]).exists()
+    assert not (config.DECOUPES / row["decoupe"]).exists()
+    # Les dossiers vides sont retirés au passage — le mois d'abord. (Le dossier
+    # du joueur n'est vérifié que sur ses propres fichiers : SQLite réattribue
+    # les identifiants libérés, et un ancien compte de test peut y avoir laissé
+    # une photo.)
+    assert not any((config.PHOTOS / str(j["id"])).rglob(pathlib.PurePath(row["fichier"]).name))
+
+
+def _decoupe_png() -> bytes:
+    from PIL import Image
+    im = Image.new("RGBA", (640, 480), (0, 0, 0, 0))
+    for x in range(200, 440):
+        for y in range(140, 340):
+            im.putpixel((x, y), (120, 160, 90, 255))
+    b = io.BytesIO(); im.save(b, "PNG"); return b.getvalue()
+
+
+def test_range_images_migre_une_installation_a_plat(client):
+    """Le script de rangement déplace les fichiers d'avant (dossiers plats,
+    découpe PNG) dans l'arborescence courante, réécrit la base, et sait
+    revenir en arrière."""
+    import sqlite3
+    from PIL import Image
+    from biodex import config
+    from outils import range_images
+    j = client.post("/inscription", json={"pseudo": "Ancien", "mdp": "motdepasse1"}).json()
+    # Une capture « d'avant », posée à la main : fichiers à plat, découpe en PNG.
+    nom = "20250101-120000-abcdef012345.jpg"
+    for d in (config.PHOTOS, config.VIGNETTES):
+        d.mkdir(parents=True, exist_ok=True)
+        (d / nom).write_bytes(_photo())
+    config.DECOUPES.mkdir(parents=True, exist_ok=True)
+    (config.DECOUPES / nom[:-4]).with_suffix(".png").write_bytes(_decoupe_png())
+    cid = db.ecrit(
+        """INSERT INTO captures (utilisateur, etat, fichier, vignette, decoupe, cree_le, partage)
+           VALUES (?, 'ok', ?, ?, ?, '2025-01-01 12:00:00', 1)""",
+        (j["id"], nom, nom, nom[:-4] + ".png")).lastrowid
+
+    etapes = range_images.plan(_connexion_lignes())
+    mienne = [e for e in etapes if e["id"] == cid]
+    assert mienne and mienne[0]["apres"]["decoupe"] == f"{j['id']}/2025-01/{nom[:-4]}.webp"
+
+    cx = _connexion_lignes(); cx.execute("BEGIN IMMEDIATE")
+    range_images.applique(cx, mienne, "apres", essai=False); cx.commit(); cx.close()
+    row = db.lit("SELECT fichier, vignette, decoupe FROM captures WHERE id = ?", (cid,))[0]
+    assert row["fichier"] == f"{j['id']}/2025-01/{nom}" and row["decoupe"].endswith(".webp")
+    assert (config.DECOUPES / row["decoupe"]).exists() and not (config.DECOUPES / (nom[:-4] + ".png")).exists()
+    with Image.open(config.DECOUPES / row["decoupe"]) as im:
+        assert im.format == "WEBP" and im.mode in ("RGBA", "RGB")
+    assert client.get(f"/captures/{cid}/photo", headers=entete(j["jeton"])).status_code == 200
+    assert client.get(f"/captures/{cid}/decoupe", headers=entete(j["jeton"])).headers["content-type"] == "image/webp"
+
+    # Et le retour en arrière.
+    cx = _connexion_lignes(); cx.execute("BEGIN IMMEDIATE")
+    range_images.applique(cx, mienne, "avant", essai=False); cx.commit(); cx.close()
+    row = db.lit("SELECT fichier, decoupe FROM captures WHERE id = ?", (cid,))[0]
+    assert row["fichier"] == nom and (config.PHOTOS / nom).exists() and (config.DECOUPES / (nom[:-4] + ".png")).exists()
+
+
+def _connexion_lignes():
+    import sqlite3
+    from biodex import config
+    cx = sqlite3.connect(config.BASE, timeout=5); cx.row_factory = sqlite3.Row
+    return cx

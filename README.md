@@ -429,6 +429,8 @@ SELECT COUNT(*) FROM captures
 
 Back up: the database, `sel_serveur.txt`, and the `photos/`, `decoupes/`, `avatars/` folders. The rest downloads or recomputes.
 
+Photos live in `photos/<player id>/<YYYY-MM>/`, with the thumbnails and the WebP cut-outs mirrored under `vignettes/` and `decoupes/`: one player's pictures are one folder to copy or remove. An installation older than this layout is reorganised with `outils/range_images.py` (services stopped, journaled, reversible).
+
 Test:
 
 ```bash

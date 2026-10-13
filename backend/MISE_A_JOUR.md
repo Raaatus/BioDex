@@ -43,6 +43,25 @@ uv pip install -p /opt/biodex/.venv/bin/python -r requirements.txt
 systemctl start biodex biodex-web
 ```
 
+## Après la mise à jour : ranger les images
+
+Cette version range les photos par joueur et par mois
+(`photos/<joueur>/<AAAA-MM>/…`, pareil pour `vignettes/` et `decoupes/`), et
+passe les découpes en WebP — cinq fois plus légères, même transparence. Les
+nouvelles photos arrivent directement ainsi ; les anciennes se rangent avec un
+script, **services arrêtés** :
+
+```bash
+cd /opt/biodex/backend
+.venv/bin/python outils/range_images.py --essai   # montre ce qui bougerait
+.venv/bin/python outils/range_images.py           # déplace et réécrit la base
+```
+
+Quelques secondes pour mille photos. Chaque déplacement est journalisé dans
+`donnees/range_images.journal.json` ; `--annule` rejoue le journal à l'envers.
+Rien n'oblige à le faire tout de suite : l'ancien rangement reste servi tel
+quel, les deux cohabitent.
+
 ## Ce que fait l'étape 5
 
 Elle crée une base neuve au schéma courant, y recopie **tout** — dex, comptes,

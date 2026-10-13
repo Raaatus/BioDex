@@ -662,6 +662,7 @@ source env.sh
    AND cree_le &lt; datetime('now', '-7 days');
 </code></pre>
 <p>Back up: the database, <code>sel_serveur.txt</code>, and the <code>photos/</code>, <code>decoupes/</code>, <code>avatars/</code> folders. The rest downloads or recomputes.</p>
+<p>Photos live in <code>photos/&lt;player id&gt;/&lt;YYYY-MM&gt;/</code>, with the thumbnails and the WebP cut-outs mirrored under <code>vignettes/</code> and <code>decoupes/</code>: one player's pictures are one folder to copy or remove. An installation older than this layout is reorganised with <code>outils/range_images.py</code> (services stopped, journaled, reversible).</p>
 <p>Test:</p>
 <pre><code class="language-bash">cd backend &amp;&amp; .venv/bin/python -m pytest -q tests      # server
 for f in backend/web/*.js; do node --check &quot;$f&quot;; done  # web client
