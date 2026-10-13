@@ -34,7 +34,7 @@ Two clients, one server:
 | | |
 |---|---|
 | **Server** | Python · FastAPI · SQLite. Recognition (MegaDetector, BioCLIP 2, Pl@ntNet, FungiTastic), accounts, the dex, friends, the map. |
-| **Web client** | Plain HTML/JS, phone-first. Everything the app does, and it installs on an iPhone home screen. |
+| **Web client** | Plain HTML/JS, phone-first. Everything the app does. **On iPhone, this is the app**: add it to the home screen, nothing to install. |
 | **Android app** | Flutter. The camera, and animations a browser cannot do. |
 
 ---
@@ -46,6 +46,7 @@ Two clients, one server:
 - [How it works](#how-it-works)
 - [Host your own server](#host-your-own-server)
 - [The web client](#the-web-client)
+- [On iPhone: no app, the website](#on-iphone-no-app-the-website)
 - [The Android app](#the-android-app)
 - [Configuration](#configuration)
 - [Upgrading](#upgrading)
@@ -304,9 +305,21 @@ By default, the server **deletes on start-up** the photos left without a species
 
 ## The web client
 
-It is served by `serveur_web.py` and lives in `backend/web/`: a page, some scripts, no build step. On an iPhone, Safari → Share → **Add to Home Screen** turns it into a full-screen app. It keeps the session, the language, the theme and the image cache.
+It is served by `serveur_web.py` and lives in `backend/web/`: a page, some scripts, no build step. It keeps the session, the language, the theme and the image cache.
 
 The web client offers everything the app does, camera included through the browser's file picker, which offers the camera on phones.
+
+---
+
+## On iPhone: no app, the website
+
+There is no iOS app, and there does not need to be one. The website is built to be put on the home screen:
+
+1. Open your server's address in **Safari** (`https://dex.example.org`).
+2. Tap **Share**, then **Add to Home Screen**.
+3. Open Biodex from the icon.
+
+It then runs full screen, without the browser bars, with its own icon and name, and keeps you signed in. The camera, the gallery, the map and the themes all work. The address must be HTTPS for Safari to allow the camera from the home-screen version — see [HTTPS](#5-https) above.
 
 ---
 
@@ -486,7 +499,7 @@ It would not exist without:
 Pas de serveur central, pas de compte chez qui que ce soit : chaque bande héberge le sien. Pas d'adresse mail, pas de pistage. Les photos restent chez toi.
 
 - **Serveur** : Python 3.12, FastAPI, SQLite. Reconnaissance par MegaDetector, BioCLIP 2, Pl@ntNet et FungiTastic. Tourne sur processeur (une quinzaine de secondes par photo).
-- **Site web** : HTML/JS sans framework, pensé pour le téléphone, installable sur l'écran d'accueil d'un iPhone.
+- **Site web** : HTML/JS sans framework, pensé pour le téléphone. **Sur iPhone, pas d'application, pas besoin** : Safari → Partager → Sur l'écran d'accueil, et le site devient l'application.
 - **Application Android** : Flutter, avec l'appareil photo. APK sur la page des [releases](https://github.com/Raaatus/BioDex/releases/latest).
 - **Langues** : français (source) et anglais, au choix dans les réglages ; une langue de plus, c'est un fichier JSON (voir [`i18n/README.md`](i18n/README.md)).
 
