@@ -141,7 +141,7 @@ A photo goes through four stages on the server:
 
 1. **MegaDetector v5a** looks for an animal and crops it. If it only sees a car or a landscape, the photo is rejected right away.
 2. **BioCLIP 2** compares the crop to the catalogue — 411,626 Latin names for animals, separate catalogues for plants and fungi.
-3. **The observation prior** corrects the raw result. On its own the model puts the roe deer neck and neck with a Chilean deer seen 404 times in history; we reweight by each species' real frequency in GBIF. Measured on the reference set: 3 correct answers out of 10 without it, 10 out of 10 with (`backend/outils/calibre.py`).
+3. **The observation prior** corrects the raw result. On its own the model puts the roe deer neck and neck with a Chilean deer seen 404 times in history; we reweight by each species' real frequency in GBIF. On the small calibration set it goes from 3 correct answers out of 10 to 10 out of 10 (`backend/outils/calibre.py`); in everyday use, expect roughly 7 photos out of 10 to land on the right species — the rest need a tap on the correct suggestion, or a choice from the list.
 4. **Grouping into slots** decides. A slot is not a catalogue entry but an *accepted species*: `Bos taurus`, `Bos primigenius` (the aurochs) and `Bos indicus` (the zebu) are three catalogue entries and a single slot, the Cow. Probabilities are summed per slot before deciding, which removes the hesitation between close relatives.
 
 Plants first go through **Pl@ntNet** if the player entered their key (free, 500 identifications a day), then BioCLIP. Fungi go through **FungiTastic** (2,829 species, far more accurate within its scope) with a fallback to BioCLIP outside it.
