@@ -6849,19 +6849,19 @@ function changeReglage(cle, valeur) {
 }
 
 function vueReglages() {
-  const t = themeChoisi();
+  const choisi = themeChoisi();
   // Une carte par thème, avec un aperçu en vraies couleurs : en-tête, deux
   // cases, une ligne de texte, un point d'accent. On choisit ce qu'on voit.
   const carteTheme = (cle, th) => `
-    <button class="carte-theme ${t === cle ? 'actif' : ''}" onclick="changeTheme('${cle}')"
+    <button class="carte-theme ${choisi === cle ? 'actif' : ''}" onclick="changeTheme('${cle}')"
             style="--ap-fond:${th.apercu.fond};--ap-fond2:${th.apercu.fond2};--ap-case:${th.apercu.case};--ap-texte:${th.apercu.texte};--ap-accent:${th.apercu.accent}"
-            aria-pressed="${t === cle}">
+            aria-pressed="${choisi === cle}">
       <span class="apercu ${cle === 'systeme' ? 'moitie' : ''}" aria-hidden="true">
         <i class="entete"></i>
         <i class="case"></i><i class="case"></i><i class="case"></i>
         <i class="ligne"></i><i class="point"></i>
       </span>
-      <b>${th.nom}${t === cle ? ' <span class="coche">✓</span>' : ''}</b>
+      <b>${th.nom}${choisi === cle ? ' <span class="coche">✓</span>' : ''}</b>
       <span class="doux">${th.detail}</span>
     </button>`;
   const bascule = (cle, defaut, titre, detail) => `
