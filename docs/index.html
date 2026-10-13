@@ -20,6 +20,7 @@
       <nav aria-label="Sections">
         <a href="#fonctions">Features</a>
         <a href="#moteur">How it works</a>
+        <a href="#demo">Demo</a>
         <a href="#captures">Screenshots</a>
         <a href="#themes">Themes</a>
         <a href="#telecharger">Download</a>
@@ -33,6 +34,7 @@
       <div class="tiroir">
         <a href="#fonctions">Features</a>
         <a href="#moteur">How it works</a>
+        <a href="#demo">Demo</a>
         <a href="#captures">Screenshots</a>
         <a href="#themes">Themes</a>
         <a href="#telecharger">Download</a>
@@ -102,6 +104,26 @@
       <div class="carte apparait"><div class="nombre">~7/10</div><p>photos land on the right species in everyday use. The others get a tap on the right suggestion, or a pick from the list.</p></div>
       <div class="carte apparait"><div class="nombre">117</div><p>domestic breeds added as aliases, so a cocker and a poodle add up on “Dog” instead of waking the wolf.</p></div>
       <div class="carte apparait"><div class="nombre">0</div><p>bytes leaving your server, except the Wikipedia article fetched once per species and the address you ask it to geocode.</p></div>
+    </div>
+  </section>
+
+  <section id="demo">
+    <span class="surtitre">Fifteen seconds, nothing cut</span>
+    <h2>A phone, a cat, and the server at work</h2>
+    <p class="intro">Recorded on the Android app, on a fresh account: take the photo, wait for the server, the slot fills.</p>
+    <div class="demo">
+      <div class="telephone-video">
+        <video autoplay muted loop playsinline preload="metadata" poster="media/capture-chat.jpg" aria-label="Screen recording: photographing a cat, the app recognises it and opens a new slot">
+          <source src="media/capture-chat.webm" type="video/webm">
+          <source src="media/capture-chat.mp4" type="video/mp4">
+        </video>
+      </div>
+      <ol class="moments">
+        <li class="apparait"><b>0:00</b><h3>An empty dex</h3><p>No rank, zero points. The slots to discover are shown as grey silhouettes.</p></li>
+        <li class="apparait"><b>0:02</b><h3>One photo</h3><p>Pick the kingdom — animal here — then shoot. No cropping needed: the detector does it.</p></li>
+        <li class="apparait"><b>0:04</b><h3>The server thinks</h3><p>MegaDetector frames the cat, BioCLIP 2 names it, the observation prior checks the odds. About ten seconds on a CPU.</p></li>
+        <li class="apparait"><b>0:12</b><h3>New species</h3><p>Chat — <i>Felis catus</i>, common, +5 points. Confetti, a slot that was grey a moment ago, and the first rank within reach.</p></li>
+      </ol>
     </div>
   </section>
 

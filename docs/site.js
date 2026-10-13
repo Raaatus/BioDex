@@ -97,6 +97,15 @@
     }
   }
 
+  // ── la vidéo : elle ne tourne que quand on la voit ───────────────────────
+  function initVideo() {
+    const v = document.querySelector('.telephone-video video');
+    if (!v || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver((entrees) => {
+      for (const e of entrees) { if (e.isIntersecting) v.play().catch(() => {}); else v.pause(); }
+    }, { threshold: .2 }).observe(v);
+  }
+
   // ── la galerie : ses filtres, et la visionneuse ─────────────────────────
   function initGalerie() {
     const filtres = document.querySelector('.filtres');
@@ -198,5 +207,5 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => { initDecor(); initBarre(); initApparitions(); initGalerie(); initVisionneuse(); initSondage(); initDoc(); });
+  document.addEventListener('DOMContentLoaded', () => { initDecor(); initBarre(); initApparitions(); initGalerie(); initVisionneuse(); initVideo(); initSondage(); initDoc(); });
 })();
