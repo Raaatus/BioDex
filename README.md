@@ -56,6 +56,7 @@ Two clients, one server:
 - [Privacy and security](#privacy-and-security)
 - [Repository layout](#repository-layout)
 - [Contributing](#contributing)
+- [Special thanks](#special-thanks)
 - [Credits and licence](#credits-and-licence)
 - [Résumé en français](#résumé-en-français)
 
@@ -483,22 +484,48 @@ Issues and pull requests are welcome; [`CONTRIBUTING.md`](CONTRIBUTING.md) says 
 
 ---
 
+## Special thanks
+
+Biodex is a thin layer on top of work that other people chose to give away. None of it would exist without them — a species sheet is GBIF's taxonomy, Wikidata's names, Wikipedia's article, a PhyloPic artist's silhouette and a model somebody trained and published. Thank you.
+
+**The species data**
+
+- [GBIF](https://www.gbif.org/) — the backbone taxonomy (every slot, every synonym) and the observation records that give the rarities and the prior. [gbif.org/occurrence](https://www.gbif.org/occurrence/search)
+- [Wikidata](https://www.wikidata.org/) — the vernacular names in every language. [query.wikidata.org](https://query.wikidata.org/)
+- [Wikipedia](https://fr.wikipedia.org/) and [Wikimedia Commons](https://commons.wikimedia.org/) — the article and its illustration on each sheet, by their volunteers.
+- [FishBase](https://www.fishbase.se/) — the fish references behind the aquatic catalogue.
+
+**The silhouettes**
+
+- [PhyloPic](https://www.phylopic.org/) — every silhouette in the dex is an SVG drawn by one of its contributors and released under CC0, CC BY or CC BY-SA. The Credits screen of the app and the website lists each artist by name, with the licence of each image. [phylopic.org/contributors](https://www.phylopic.org/contributors)
+
+**The models**
+
+- [MegaDetector](https://github.com/microsoft/CameraTraps) — Microsoft AI for Earth and the camera-trap community; finds the animal in the photo.
+- [BioCLIP 2](https://imageomics.github.io/bioclip-2/) — the Imageomics Institute, trained on [TreeOfLife-200M](https://huggingface.co/datasets/imageomics/TreeOfLife-200M); names the species.
+- [Pl@ntNet](https://plantnet.org/) — the plants, through their public API. [my.plantnet.org](https://my.plantnet.org/)
+- [FungiTastic](https://huggingface.co/BVRA) — the BVRA group, the fungi.
+- [FishNet](https://fishnet-2023.github.io/) — the fish catalogue and its images.
+
+**The map**
+
+- [OpenStreetMap](https://www.openstreetmap.org/) and its contributors — the tiles and, through [Nominatim](https://nominatim.org/), the names of places.
+- [OpenTopoMap](https://opentopomap.org/) — the relief layer.
+- [Esri](https://www.esri.com/) — the satellite imagery.
+- [Leaflet](https://leafletjs.com/) — the map itself.
+
+**And**
+
+- [Meshy](https://www.meshy.ai/) — the 3D frogs of the achievements.
+- Python, FastAPI, SQLite, PyTorch, Flutter, and the people who maintain them.
+
+If you reuse Biodex, keep these credits with it: the licences of PhyloPic, OpenStreetMap and Wikipedia ask for attribution, and the rest deserve it.
+
+---
+
 ## Credits and licence
 
-Biodex is released under the [MIT licence](LICENSE).
-
-It would not exist without:
-
-- [GBIF](https://www.gbif.org/) — the taxonomic backbone and the observations;
-- [PhyloPic](https://www.phylopic.org/) and its contributors — the silhouettes, under CC0, CC BY and CC BY-SA (the Credits screen names them one by one);
-- [Wikipedia](https://fr.wikipedia.org/) and [Wikimedia Commons](https://commons.wikimedia.org/) — articles and their illustrations;
-- [MegaDetector](https://github.com/microsoft/CameraTraps) — detection;
-- [BioCLIP 2](https://imageomics.github.io/bioclip-2/) — recognition;
-- [Pl@ntNet](https://plantnet.org/) — plants;
-- [FungiTastic](https://huggingface.co/BVRA) — fungi;
-- [FishNet](https://fishnet-2023.github.io/) — fish;
-- [Nominatim](https://nominatim.org/), OpenStreetMap, Esri, OpenTopoMap — the map;
-- [Meshy](https://www.meshy.ai/) — the 3D frogs of the achievements.
+Biodex is released under the [MIT licence](LICENSE). The data and models it relies on keep their own licences, listed above in [Special thanks](#special-thanks).
 
 ---
 

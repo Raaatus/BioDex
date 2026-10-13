@@ -37,7 +37,7 @@
   <div class="doc">
     <aside>
       <input type="search" placeholder="Filter sections…" aria-label="Filter sections">
-      <a href="#contents">Contents</a><a href="#screenshots">Screenshots</a><a href="#what-biodex-does">What Biodex does</a><a class="h3" href="#photograph-and-recognise">Photograph and recognise</a><a class="h3" href="#collect">Collect</a><a class="h3" href="#with-friends">With friends</a><a class="h3" href="#dress-it-up">Dress it up</a><a class="h3" href="#stay-in-control">Stay in control</a><a href="#how-it-works">How it works</a><a class="h3" href="#domestic-animals">Domestic animals</a><a class="h3" href="#silhouettes">Silhouettes</a><a class="h3" href="#rarities-and-points">Rarities and points</a><a class="h3" href="#two-clients-one-api">Two clients, one API</a><a href="#host-your-own-server">Host your own server</a><a class="h3" href="#requirements">Requirements</a><a class="h3" href="#1-the-code">1. The code</a><a class="h3" href="#2-the-data">2. The data</a><a class="h3" href="#3-run">3. Run</a><a class="h3" href="#4-as-a-service">4. As a service</a><a class="h3" href="#5-https">5. HTTPS</a><a class="h3" href="#-the-purge">⚠️ The purge</a><a href="#the-web-client">The web client</a><a href="#on-iphone-no-app-the-website">On iPhone: no app, the website</a><a href="#the-android-app">The Android app</a><a class="h3" href="#install">Install</a><a class="h3" href="#build-it-yourself">Build it yourself</a><a href="#configuration">Configuration</a><a href="#upgrading">Upgrading</a><a href="#languages">Languages</a><a href="#rebuilding-the-data-yourself">Rebuilding the data yourself</a><a href="#useful-commands">Useful commands</a><a href="#privacy-and-security">Privacy and security</a><a href="#repository-layout">Repository layout</a><a href="#contributing">Contributing</a><a href="#credits-and-licence">Credits and licence</a><a href="#résumé-en-français">Résumé en français</a>
+      <a href="#contents">Contents</a><a href="#screenshots">Screenshots</a><a href="#what-biodex-does">What Biodex does</a><a class="h3" href="#photograph-and-recognise">Photograph and recognise</a><a class="h3" href="#collect">Collect</a><a class="h3" href="#with-friends">With friends</a><a class="h3" href="#dress-it-up">Dress it up</a><a class="h3" href="#stay-in-control">Stay in control</a><a href="#how-it-works">How it works</a><a class="h3" href="#domestic-animals">Domestic animals</a><a class="h3" href="#silhouettes">Silhouettes</a><a class="h3" href="#rarities-and-points">Rarities and points</a><a class="h3" href="#two-clients-one-api">Two clients, one API</a><a href="#host-your-own-server">Host your own server</a><a class="h3" href="#requirements">Requirements</a><a class="h3" href="#1-the-code">1. The code</a><a class="h3" href="#2-the-data">2. The data</a><a class="h3" href="#3-run">3. Run</a><a class="h3" href="#4-as-a-service">4. As a service</a><a class="h3" href="#5-https">5. HTTPS</a><a class="h3" href="#-the-purge">⚠️ The purge</a><a href="#the-web-client">The web client</a><a href="#on-iphone-no-app-the-website">On iPhone: no app, the website</a><a href="#the-android-app">The Android app</a><a class="h3" href="#install">Install</a><a class="h3" href="#build-it-yourself">Build it yourself</a><a href="#configuration">Configuration</a><a href="#upgrading">Upgrading</a><a href="#languages">Languages</a><a href="#rebuilding-the-data-yourself">Rebuilding the data yourself</a><a href="#useful-commands">Useful commands</a><a href="#privacy-and-security">Privacy and security</a><a href="#repository-layout">Repository layout</a><a href="#contributing">Contributing</a><a href="#special-thanks">Special thanks</a><a href="#credits-and-licence">Credits and licence</a><a href="#résumé-en-français">Résumé en français</a>
       <a href="https://github.com/Raaatus/BioDex/edit/main/README.md" style="margin-top:14px;color:var(--accent)">✎ Edit this page on GitHub</a>
     </aside>
     <article class="prose">
@@ -110,6 +110,7 @@
 <li><a href="#privacy-and-security">Privacy and security</a></li>
 <li><a href="#repository-layout">Repository layout</a></li>
 <li><a href="#contributing">Contributing</a></li>
+<li><a href="#special-thanks">Special thanks</a></li>
 <li><a href="#credits-and-licence">Credits and licence</a></li>
 <li><a href="#résumé-en-français">Résumé en français</a></li>
 </ul>
@@ -714,21 +715,43 @@ docs/             the website (GitHub Pages) and the screenshots
 <h2 id="contributing">Contributing</h2>
 <p>Issues and pull requests are welcome; <a href="https://github.com/Raaatus/BioDex/blob/main/CONTRIBUTING.md"><code>CONTRIBUTING.md</code></a> says how. Tests run in CI, and a <code>v*</code> tag builds the APK and the server archive as a release.</p>
 <hr />
-<h2 id="credits-and-licence">Credits and licence</h2>
-<p>Biodex is released under the <a href="https://github.com/Raaatus/BioDex/blob/main/LICENSE">MIT licence</a>.</p>
-<p>It would not exist without:</p>
+<h2 id="special-thanks">Special thanks</h2>
+<p>Biodex is a thin layer on top of work that other people chose to give away. None of it would exist without them — a species sheet is GBIF's taxonomy, Wikidata's names, Wikipedia's article, a PhyloPic artist's silhouette and a model somebody trained and published. Thank you.</p>
+<p><strong>The species data</strong></p>
 <ul>
-<li><a href="https://www.gbif.org/">GBIF</a> — the taxonomic backbone and the observations;</li>
-<li><a href="https://www.phylopic.org/">PhyloPic</a> and its contributors — the silhouettes, under CC0, CC BY and CC BY-SA (the Credits screen names them one by one);</li>
-<li><a href="https://fr.wikipedia.org/">Wikipedia</a> and <a href="https://commons.wikimedia.org/">Wikimedia Commons</a> — articles and their illustrations;</li>
-<li><a href="https://github.com/microsoft/CameraTraps">MegaDetector</a> — detection;</li>
-<li><a href="https://imageomics.github.io/bioclip-2/">BioCLIP 2</a> — recognition;</li>
-<li><a href="https://plantnet.org/">Pl@ntNet</a> — plants;</li>
-<li><a href="https://huggingface.co/BVRA">FungiTastic</a> — fungi;</li>
-<li><a href="https://fishnet-2023.github.io/">FishNet</a> — fish;</li>
-<li><a href="https://nominatim.org/">Nominatim</a>, OpenStreetMap, Esri, OpenTopoMap — the map;</li>
-<li><a href="https://www.meshy.ai/">Meshy</a> — the 3D frogs of the achievements.</li>
+<li><a href="https://www.gbif.org/">GBIF</a> — the backbone taxonomy (every slot, every synonym) and the observation records that give the rarities and the prior. <a href="https://www.gbif.org/occurrence/search">gbif.org/occurrence</a></li>
+<li><a href="https://www.wikidata.org/">Wikidata</a> — the vernacular names in every language. <a href="https://query.wikidata.org/">query.wikidata.org</a></li>
+<li><a href="https://fr.wikipedia.org/">Wikipedia</a> and <a href="https://commons.wikimedia.org/">Wikimedia Commons</a> — the article and its illustration on each sheet, by their volunteers.</li>
+<li><a href="https://www.fishbase.se/">FishBase</a> — the fish references behind the aquatic catalogue.</li>
 </ul>
+<p><strong>The silhouettes</strong></p>
+<ul>
+<li><a href="https://www.phylopic.org/">PhyloPic</a> — every silhouette in the dex is an SVG drawn by one of its contributors and released under CC0, CC BY or CC BY-SA. The Credits screen of the app and the website lists each artist by name, with the licence of each image. <a href="https://www.phylopic.org/contributors">phylopic.org/contributors</a></li>
+</ul>
+<p><strong>The models</strong></p>
+<ul>
+<li><a href="https://github.com/microsoft/CameraTraps">MegaDetector</a> — Microsoft AI for Earth and the camera-trap community; finds the animal in the photo.</li>
+<li><a href="https://imageomics.github.io/bioclip-2/">BioCLIP 2</a> — the Imageomics Institute, trained on <a href="https://huggingface.co/datasets/imageomics/TreeOfLife-200M">TreeOfLife-200M</a>; names the species.</li>
+<li><a href="https://plantnet.org/">Pl@ntNet</a> — the plants, through their public API. <a href="https://my.plantnet.org/">my.plantnet.org</a></li>
+<li><a href="https://huggingface.co/BVRA">FungiTastic</a> — the BVRA group, the fungi.</li>
+<li><a href="https://fishnet-2023.github.io/">FishNet</a> — the fish catalogue and its images.</li>
+</ul>
+<p><strong>The map</strong></p>
+<ul>
+<li><a href="https://www.openstreetmap.org/">OpenStreetMap</a> and its contributors — the tiles and, through <a href="https://nominatim.org/">Nominatim</a>, the names of places.</li>
+<li><a href="https://opentopomap.org/">OpenTopoMap</a> — the relief layer.</li>
+<li><a href="https://www.esri.com/">Esri</a> — the satellite imagery.</li>
+<li><a href="https://leafletjs.com/">Leaflet</a> — the map itself.</li>
+</ul>
+<p><strong>And</strong></p>
+<ul>
+<li><a href="https://www.meshy.ai/">Meshy</a> — the 3D frogs of the achievements.</li>
+<li>Python, FastAPI, SQLite, PyTorch, Flutter, and the people who maintain them.</li>
+</ul>
+<p>If you reuse Biodex, keep these credits with it: the licences of PhyloPic, OpenStreetMap and Wikipedia ask for attribution, and the rest deserve it.</p>
+<hr />
+<h2 id="credits-and-licence">Credits and licence</h2>
+<p>Biodex is released under the <a href="https://github.com/Raaatus/BioDex/blob/main/LICENSE">MIT licence</a>. The data and models it relies on keep their own licences, listed above in <a href="#special-thanks">Special thanks</a>.</p>
 <hr />
 <h2 id="résumé-en-français">Résumé en français</h2>
 <p><strong>Biodex est un Pokédex du vivant, libre et auto-hébergé.</strong> On photographie un animal, une plante ou un champignon ; ton propre serveur le reconnaît parmi près d'un million d'espèces et remplit la case correspondante dans ta collection. Tes amis font pareil sur le même serveur, et vous comparez : fil d'activité, réactions, classement, carte des trouvailles avec les nouveautés d'abord, cinquante rangs, 82 succès avec leur grenouille en 3D, une vitrine, dix-sept thèmes à décor animé.</p>
