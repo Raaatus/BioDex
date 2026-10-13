@@ -12,8 +12,11 @@
 
   function poseDecor(nom) {
     if (typeof Fond === 'undefined') return;
-    const reduit = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    document.documentElement.classList.toggle('sans-animation', reduit);
+    // Le décor est ce que la page montre : il tourne même quand le téléphone
+    // demande moins d'animations (c'est le cas d'un iPhone sur deux, le
+    // réglage « Réduire les animations » coupe aussi la parallaxe de l'écran
+    // d'accueil). Les autres animations de la page, elles, le respectent.
+    document.documentElement.classList.remove('sans-animation');
     Fond.demarre(nom);
     // Sur un décor clair, le voile et les cartes s'assombrissent un peu plus
     // pour que le texte blanc tienne.
