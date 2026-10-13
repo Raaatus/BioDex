@@ -1,0 +1,15 @@
+{
+  "_lisez_moi": "Jeu de calibration : nom de fichier (sans extension) -> case attendue, en nom latin accepté. « REJET » pour les images qui ne doivent remplir aucune case. Ajoutez-y vos propres photos au fur et à mesure : c'est ce qui permet de régler les seuils sur des mesures plutôt qu'à l'intuition.",
+
+  "vache_holstein": "Bos taurus",
+  "zebu": "Bos taurus",
+  "chevreuil": "Capreolus capreolus",
+  "mesange_bleue": "Cyanistes caeruleus",
+  "coccinelle": "Coccinella septempunctata",
+  "bourdon": "Bombus terrestris",
+  "lezard_murailles": "Podarcis muralis",
+  "_note_girafe": "GBIF reconnaît quatre espèces de girafes depuis leur séparation ; cette photo tombe sur Giraffa giraffa. Le cas ne teste donc pas grand-chose, il est gardé parce qu'il vérifie qu'un animal hors d'Europe est bien reconnu.",
+  "neg_girafe": "Giraffa giraffa",
+  "neg_voiture": "REJET",
+  "neg_paysage": "REJET"
+}

@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  serveur:
+    name: Serveur (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Dépendances
+        run: |
+          cd backend
+          uv venv .venv
+          uv pip install -p .venv/bin/python -r requirements.txt pytest
+      - name: Tests
+        run: cd backend && .venv/bin/python -m pytest -q tests
+
+  site:
+    name: Site (syntaxe)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: for f in backend/web/*.js; do node --check "$f"; done
+
+  application:
+    name: Application (analyse et tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: cd app && flutter pub get
+      - run: cd app && flutter analyze
+      - run: cd app && flutter test

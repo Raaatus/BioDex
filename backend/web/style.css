@@ -1,0 +1,3503 @@
+/* Le Biodex en navigateur.
+ *
+ * Cette feuille ne cherche pas à « faire joli » : elle transpose l'application
+ * Flutter mesure par mesure. Les couleurs viennent de `theme.dart`, les rayons
+ * et les espacements des widgets eux-mêmes. Quand une valeur paraît étrange —
+ * 18 pixels de rayon, cinq colonnes, un nom de 10 pixels sur deux lignes —
+ * c'est qu'elle est copiée, pas choisie.
+ *
+ * Sobre par principe : dans une grille de plusieurs centaines de cases, la
+ * couleur doit venir des animaux trouvés, pas du décor. Les seules couleurs
+ * franches sont celles des qualités, justement pour qu'une belle prise saute
+ * aux yeux au milieu du tout-venant. */
+
+:root {
+  --fond: #ffffff;
+  --fond-2: #f6f7f8;
+  --case-vide: #f1f1f2;
+  --silhouette: #d2d3d6;
+  --bordure: #b9babd;
+  --texte: #1b1d21;
+  /* Mesuré, pas choisi à l'œil : #80858f donnait 3,70 sur blanc et 3,45 sur le
+   * fond secondaire, là où il faut 4,5 pour du petit texte. C'est ce gris qui
+   * porte les compteurs du dex et les points du profil — précisément ce qu'on
+   * n'arrivait pas à lire. #6b7079 monte à 4,98 et 4,64 sans cesser d'être un
+   * gris secondaire. Le thème sombre était déjà à 6,42 : il ne bouge pas. */
+  --texte-doux: #6b7079;
+  --accent: #0ea5a4;
+  --accent-sombre: #0b7f7e;
+  --alerte: #e05252;
+
+  /* Les cinq qualités : gris, vert, bleu, violet, or. Le dégradé que tout
+   * joueur reconnaît d'instinct, et qui se lit même en petit. */
+  --q1: #9aa1ac;
+  --q2: #3fae5a;
+  --q3: #3b82f6;
+  --q4: #9b51e0;
+  --q5: #e8a317;
+
+  /* La barre du bas et la sphère qui s'y encastre. */
+  --barre: 64px;
+  --sphere: 62px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--texte);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        system-ui, sans-serif;
+  /* `dvh` et non `vh` : sur iPhone, la barre d'adresse change la hauteur en
+   * cours de défilement, et `vh` fige la valeur d'origine — le bas de page
+   * passe alors sous le navigateur. */
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
+}
+
+button, input { font: inherit; }
+.doux { color: var(--texte-doux); }
+
+/* La marge basse laisse passer la barre *et* la sphère, qui déborde par
+ * au-dessus. */
+main {
+  display: block;
+  padding-bottom: calc(var(--barre) + 34px + env(safe-area-inset-bottom));
+}
+
+/* ══════════════════════════ l'en-tête des écrans ══════════════════════════ */
+
+header {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--fond);
+  padding: max(10px, env(safe-area-inset-top)) 8px 8px;
+  display: flex; align-items: center; gap: 4px;
+}
+header h1 { font-size: 20px; font-weight: 700; margin: 0 0 0 8px; flex: 1; }
+
+button.retour, button.outil {
+  position: relative; flex: 0 0 auto;
+  display: grid; place-items: center;
+  width: 40px; height: 40px; border: 0; border-radius: 50%;
+  background: none; color: var(--texte); cursor: pointer;
+}
+button.retour:active, button.outil:active { background: var(--case-vide); }
+button.outil.allume { color: var(--accent); }
+
+/* Le compteur rouge : le `Badge.count` de Material. */
+.compteur {
+  position: absolute; top: 2px; right: 2px;
+  min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 8px; background: var(--alerte);
+  color: #fff; font-size: 10px; font-style: normal;
+  font-weight: 600; line-height: 16px; text-align: center;
+}
+
+/* ─────────────────────────── l'en-tête du dex ─────────────────────────── */
+
+/* Le dex n'a pas d'AppBar : titre, carte, filtres et recherche tiennent sur
+ * une seule ligne, la recherche occupant une largeur fixe à droite. */
+.entete-dex {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--fond);
+  display: flex; align-items: center; gap: 2px;
+  padding: max(10px, env(safe-area-inset-top)) 10px 6px 16px;
+}
+.entete-dex h1 { flex: 1; margin: 0; font-size: 24px; font-weight: 800; }
+
+.champ-recherche {
+  flex: 0 0 auto; width: 150px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 10px; border-radius: 12px;
+  background: var(--fond-2); color: var(--texte-doux);
+}
+.champ-recherche input {
+  flex: 1; min-width: 0; border: 0; background: none;
+  color: var(--texte); font-size: 13px; outline: none;
+}
+.champ-recherche button {
+  border: 0; background: none; color: var(--texte-doux);
+  font-size: 12px; cursor: pointer; padding: 0;
+}
+
+/* ────────────────────────── le bandeau de rang ──────────────────────────── */
+
+.palier {
+  display: flex; align-items: center; gap: 12px;
+  margin: 2px 16px 10px; padding: 12px 14px 12px 12px;
+  background: var(--fond-2); border-radius: 18px; cursor: pointer;
+}
+.palier .ecusson {
+  width: 56px; height: 56px; flex: 0 0 auto;
+  border-radius: 10px; object-fit: cover;
+}
+/* Avant la première trouvaille, le rang n'est pas gagné : on le montre en
+ * sourdine plutôt que de laisser la place vide. */
+.palier .ecusson.eteint { opacity: .35; filter: grayscale(1); }
+.palier .ecusson.suivant { width: 34px; height: 34px; opacity: .35; }
+.palier .corps { flex: 1; min-width: 0; }
+.palier .haut { display: flex; align-items: baseline; gap: 6px; }
+.palier .haut b {
+  font-size: 16.5px; font-weight: 800;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.palier .haut .doux { font-size: 11px; flex: 0 0 auto; }
+/* Espèces et points sont deux comptes différents, et les confondre laissait
+ * croire à une erreur : le rang se gagne en espèces, les points s'accumulent
+ * à côté et incluent les applaudissements des amis. */
+.palier .comptes { display: flex; gap: 10px; font-size: 12px; margin-top: 1px; }
+.palier .jauge { margin-top: 7px; }
+.palier .reste {
+  font-size: 11px; margin-top: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.palier .max {
+  font-size: 11px; margin-top: 6px;
+  color: var(--accent-sombre); font-weight: 600;
+}
+
+.jauge { height: 6px; border-radius: 4px; background: var(--case-vide); overflow: hidden; }
+.jauge > div, .jauge > span {
+  display: block; height: 100%; background: var(--accent); border-radius: 4px;
+}
+
+/* ───────────────────────── règnes, modes, fil d'Ariane ───────────────────── */
+
+/* Les puces de règne : fond de la couleur à 14 %, liseré franc quand elles
+ * sont choisies. `--c` porte la teinte du règne. */
+.puces {
+  display: flex; gap: 8px; padding: 0 16px 4px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.puces::-webkit-scrollbar { display: none; }
+.puce {
+  flex: 0 0 auto; padding: 7px 13px; border-radius: 20px;
+  border: 1.4px solid transparent; background: var(--fond-2);
+  color: var(--texte-doux); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.puce.actif {
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  border-color: var(--c); color: var(--c);
+}
+
+/* Le sélecteur Cases / Groupes / Récent : le SegmentedButton de Material —
+ * un seul cadre, des cloisons entre les segments, pas trois boutons. */
+.segments {
+  display: flex; margin: 6px 16px 8px;
+  border: 1px solid var(--bordure); border-radius: 20px; overflow: hidden;
+}
+.segments button {
+  flex: 1; padding: 7px 4px; border: 0; cursor: pointer;
+  background: none; color: var(--texte); font-size: 12px;
+  border-left: 1px solid var(--bordure);
+}
+.segments button:first-child { border-left: 0; }
+.segments button.actif {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent-sombre); font-weight: 700;
+}
+
+.ariane {
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+  padding: 0 16px 8px; font-size: 12.5px; color: var(--texte-doux);
+}
+.ariane button {
+  border: 0; background: none; padding: 2px 0; cursor: pointer;
+  color: var(--accent); font-size: 12.5px; font-weight: 600;
+}
+
+.titre-section { display: flex; flex-direction: column; padding: 14px 18px 8px; }
+.titre-section b { font-size: 14px; font-weight: 700; }
+.titre-section .doux { font-size: 11.5px; }
+
+/* ═══════════════════════════ la grille du dex ═════════════════════════════ */
+
+/* Cinq colonnes, comme dans l'application. Le nom vit sous la case, pas
+ * dedans : une bande de texte à l'intérieur mangeait l'animal. */
+.grille-dex {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  column-gap: 8px; row-gap: 10px; padding: 0 16px;
+}
+
+.case-dex { cursor: pointer; }
+.case-dex .vignette {
+  position: relative; aspect-ratio: 1;
+  display: grid; place-items: center; overflow: hidden;
+  background: var(--case-vide);
+  border-radius: 18px;
+  /* Une case vide garde un liseré très pâle de sa qualité : on devine ce qui
+   * se cache derrière sans que ça crie. */
+  border: 1.2px solid color-mix(in srgb, var(--qc) 18%, transparent);
+  box-shadow: 0 1px 4px -1px color-mix(in srgb, var(--qc) 12%, transparent);
+}
+/* Un halo franc sur les trouvailles, plus large à partir de « rare » : c'est
+ * ce qui fait ressortir une belle prise au milieu de la grille, sans avoir à
+ * lire quoi que ce soit. */
+.case-dex .vignette.trouvee {
+  border: 2px solid var(--qc);
+  box-shadow: 0 1px 6px -1px color-mix(in srgb, var(--qc) 30%, transparent);
+}
+.case-dex .vignette.trouvee.q4,
+.case-dex .vignette.trouvee.q5 {
+  box-shadow: 0 1px 10px color-mix(in srgb, var(--qc) 45%, transparent);
+}
+.vignette.q1 { --qc: var(--q1); }
+.vignette.q2 { --qc: var(--q2); }
+.vignette.q3 { --qc: var(--q3); }
+.vignette.q4 { --qc: var(--q4); }
+.vignette.q5 { --qc: var(--q5); }
+
+/* `contain` et non `cover` : on veut voir la bête en entier, pas un gros plan
+ * sur son flanc. */
+.vignette .decoupe { width: 100%; height: 100%; object-fit: contain; padding: 7px; }
+.vignette .pleine { width: 100%; height: 100%; object-fit: cover; }
+
+/* Le masque écrase toute la couleur du tracé : la silhouette devient un aplat
+ * gris uniforme, y compris les détails clairs du dessin. */
+.vignette .silhouette {
+  display: block; width: 100%; height: 100%;
+  background: var(--silhouette);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-size: calc(100% - 24px) calc(100% - 24px);
+  mask-size: calc(100% - 24px) calc(100% - 24px);
+}
+.vignette .sans-visuel { color: var(--silhouette); font-size: 22px; }
+
+.case-dex .nom {
+  height: 26px; margin-top: 4px;
+  font-size: 10px; line-height: 1.2; text-align: center;
+  color: var(--texte-doux);
+  overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.case-dex .vignette.trouvee + .nom { color: var(--texte); font-weight: 600; }
+.case-dex.compacte { width: 54px; flex: 0 0 auto; }
+.case-dex.compacte .vignette { border-radius: 14px; }
+
+/* ─────────────────────────── pastilles de qualité ────────────────────────── */
+
+.pastille {
+  display: inline-flex; align-items: center; flex: 0 0 auto;
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+  color: var(--qc);
+  background: color-mix(in srgb, var(--qc) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--qc) 45%, transparent);
+}
+.pastille.q1 { --qc: var(--q1); } .pastille.q2 { --qc: var(--q2); }
+.pastille.q3 { --qc: var(--q3); } .pastille.q4 { --qc: var(--q4); }
+.pastille.q5 { --qc: var(--q5); }
+.pastille.toxique { --qc: var(--alerte); }
+.pastille-regne {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 9px; border-radius: 20px;
+  font-size: 12px; font-weight: 700; color: var(--c);
+  background: color-mix(in srgb, var(--c) 12%, transparent);
+}
+.pastilles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+/* ─────────────────────────── l'arbre et le récent ────────────────────────── */
+
+.branches { padding: 0 16px 24px; }
+.branche {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 12px 14px; margin-bottom: 8px; cursor: pointer;
+  background: var(--fond-2); border: 0; border-radius: 14px;
+  color: var(--texte); text-align: left;
+}
+.branche .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.branche .texte b { font-size: 14px; }
+.branche .texte .doux { font-size: 11.5px; }
+.branche .jauge { width: 64px; flex: 0 0 auto; }
+
+.recentes { padding: 0 16px 24px; }
+.recentes .ligne { padding-left: 0; padding-right: 0; }
+.latin { font-style: italic; }
+
+/* ════════════════════════════ la barre du bas ════════════════════════════ */
+
+/* La barre est percée d'une encoche où la sphère vient se poser. Le masque
+ * radial creuse le fond lui-même, comme le `CircularNotchedRectangle` de
+ * l'application : dessiner un rond blanc par-dessus laisserait un liseré. */
+nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  height: calc(var(--barre) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex; align-items: stretch;
+  background: var(--fond);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, .10);
+  /* Les arrêts de couleur portent les longueurs, plutôt qu'un rayon posé
+   * avant « at » : `radial-gradient(39px at …)` sans mot-clé de forme est
+   * invalide, et toute la déclaration part à la poubelle. */
+  --creux: calc(var(--sphere) / 2 + 7px);
+  -webkit-mask: radial-gradient(circle at 50% 0,
+                  transparent var(--creux), #000 calc(var(--creux) + 1px));
+  mask: radial-gradient(circle at 50% 0,
+          transparent var(--creux), #000 calc(var(--creux) + 1px));
+}
+nav .creux { width: 64px; flex: 0 0 auto; }
+nav .encoche { display: none; }
+
+nav button {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  border: 0; background: none; cursor: pointer;
+  color: var(--texte-doux); padding: 0;
+}
+nav button .ico { position: relative; display: block; line-height: 0; }
+nav button svg { width: 23px; height: 23px; fill: currentColor; }
+nav button.actif { color: var(--accent); }
+/* Le nom n'apparaît que sur l'onglet actif : quatre libellés permanents
+ * alourdissaient la barre sans rien apprendre. */
+nav button .nom {
+  font-size: 10.5px; font-weight: 700; color: var(--accent);
+  max-height: 0; padding-top: 0; overflow: hidden;
+  transition: max-height .16s, padding-top .16s;
+}
+nav button.actif .nom { max-height: 16px; padding-top: 3px; }
+
+/* La sphère : posée dans l'encoche, débordant par-dessus la barre. C'est
+ * l'objet du jeu et le geste qu'on vient faire — il mérite mieux qu'un onglet
+ * parmi cinq, où il se noyait. */
+.flottant {
+  position: fixed; z-index: 21;
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--barre) - var(--sphere) / 2 - 4px + env(safe-area-inset-bottom));
+  width: var(--sphere); height: var(--sphere); padding: 0;
+  border: 0; border-radius: 50%; background: none; cursor: pointer;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .28));
+}
+/* Deux secousses rapprochées, une pause, et ça recommence : le rythme d'un
+ * animal qui s'agite par à-coups, pas d'un objet qui vibre. */
+.flottant:active { animation: fremit .9s linear infinite; }
+@keyframes fremit {
+  0%   { transform: translateX(-50%) rotate(0deg); }
+  8%   { transform: translateX(-50%) rotate(7.5deg); }
+  16%  { transform: translateX(-50%) rotate(-7.5deg); }
+  24%  { transform: translateX(-50%) rotate(7.5deg); }
+  32%  { transform: translateX(-50%) rotate(-7.5deg); }
+  46%, 100% { transform: translateX(-50%) rotate(0deg); }
+}
+.sphere { display: block; }
+
+/* ═══════════════════════════ le mur de photos ════════════════════════════ */
+
+.mur {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 6px; padding: 4px 14px 24px;
+}
+.tuile {
+  position: relative; aspect-ratio: 1; cursor: pointer;
+  overflow: hidden; border-radius: 12px; background: var(--case-vide);
+}
+.tuile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tuile.creuse { cursor: default; }
+/* Un voile sombre en bas : sans lui, le texte blanc disparaît sur les photos
+ * claires. */
+.tuile .voile {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; gap: 4px;
+  padding: 12px 6px 5px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, .54));
+}
+/* Le titre prime sur l'espèce : c'est lui que le joueur a choisi. */
+.tuile .voile span {
+  flex: 1; min-width: 0; color: #fff; font-size: 10px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tuile .voile .avatar { width: 14px; height: 14px; font-size: 8px; }
+.tuile .etoile {
+  position: absolute; top: 3px; right: 5px;
+  color: var(--q5); font-size: 15px; line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+.tuile .gemme {
+  position: absolute; top: 5px; left: 5px;
+  width: 9px; height: 9px; border-radius: 50%;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .85);
+}
+.gemme.q4 { background: var(--q4); }
+.gemme.q5 { background: var(--q5); }
+
+/* ══════════════════════════ listes de personnes ══════════════════════════ */
+
+.titre {
+  margin: 20px 16px 8px; font-size: 12px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--texte-doux);
+}
+.ligne {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 16px; border-bottom: 1px solid var(--case-vide);
+}
+.ligne .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ligne .texte b { font-size: 14px; }
+.ligne .doux { font-size: 12px; }
+.ligne.moi { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+/* Le point de non-lu, à gauche : la couleur seule ne suffirait pas pour un
+ * daltonien, et un fond teinté sur toute la ligne serait trop bruyant. */
+.ligne.neuf { position: relative; }
+.ligne.neuf::before {
+  content: ''; position: absolute; left: 6px; top: 50%;
+  width: 6px; height: 6px; margin-top: -3px;
+  border-radius: 50%; background: var(--accent);
+}
+.ligne .minia { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
+.rang {
+  width: 22px; text-align: center; font-size: 13px;
+  font-weight: 800; color: var(--texte-doux);
+}
+
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex: 0 0 auto;
+  object-fit: cover; background: var(--case-vide);
+}
+.avatar.vide-av {
+  display: grid; place-items: center;
+  color: var(--texte-doux); font-weight: 800;
+}
+.avatar.grand { width: 88px; height: 88px; font-size: 32px; }
+
+/* ═══════════════════════════════ les paliers ═════════════════════════════ */
+
+.badges {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 10px; padding: 12px 16px 24px;
+}
+.badge {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 6px; border-radius: 14px;
+  background: var(--fond-2); text-align: center;
+}
+/* Les noms vont de « Larve » à « Promeneur du dimanche » : sans hauteur
+ * réservée, les tuiles d'une même rangée ne s'alignent plus. */
+.badge b { font-size: 11.5px; line-height: 1.25; }
+.badge .nom-palier {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden; height: 29px;
+}
+.badge img, .badge .rond {
+  width: 46px; height: 46px; border-radius: 9px;
+  background: var(--case-vide); object-fit: cover;
+}
+.badge .doux { font-size: 10.5px; }
+/* Verrouillé : on montre la forme sans la récompense. Le gris dit « pas
+ * encore », l'absence dirait « jamais ». */
+.badge.verrouille img { opacity: .35; filter: grayscale(1); }
+.badge.verrouille b { color: var(--texte-doux); font-weight: 600; }
+
+/* ════════════════════════════ prendre une photo ══════════════════════════ */
+
+.depot .zone {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 42px 20px; cursor: pointer;
+  /* Le pointillé dit « dépose ici » sans avoir à l'écrire. */
+  border: 2px dashed var(--bordure); border-radius: 18px;
+  color: var(--accent); background: var(--fond-2);
+}
+.depot .zone b { font-size: 15px; color: var(--texte); }
+
+.analyse { text-align: left; }
+/* La photo qu'on vient de prendre. La règle vivait dans `.feuille`, où la
+ * carte d'analyse ne va jamais : l'image sortait donc sans hauteur. */
+.analyse img.grande {
+  display: block; width: 100%; max-height: 320px; object-fit: cover;
+  border-radius: 16px; margin-bottom: 12px; background: var(--case-vide);
+}
+.piste {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 8px 10px; margin-bottom: 6px; cursor: pointer;
+  background: var(--fond-2); border: 1px solid transparent;
+  border-radius: 14px; color: var(--texte); text-align: left;
+}
+.piste:disabled { opacity: .45; cursor: default; }
+.piste img, .piste .rond {
+  width: 38px; height: 38px; border-radius: 10px; flex: 0 0 auto;
+  object-fit: contain; padding: 3px; background: var(--case-vide);
+}
+.piste .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.piste .texte b { font-size: 13.5px; }
+.piste .texte .doux { font-size: 11.5px; font-style: italic; }
+.piste .proba { font-size: 12px; font-weight: 800; color: var(--accent); }
+
+/* ═════════════════════════════ les réactions ═════════════════════════════ */
+
+/* Assez grandes pour un pouce, assez serrées pour tenir sur la largeur d'un
+ * iPhone SE. */
+.reactions { display: flex; gap: 6px; margin-top: 14px; }
+.reactions button {
+  flex: 1; position: relative; cursor: pointer;
+  padding: 9px 0; border-radius: 14px; font-size: 21px; line-height: 1;
+  border: 1.4px solid transparent; background: var(--fond-2);
+}
+.reactions button.choisie {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.reactions button i {
+  position: absolute; top: 2px; right: 5px;
+  font-style: normal; font-size: 10px; font-weight: 800; color: var(--texte-doux);
+}
+
+/* ═════════════════════════ formulaires et boutons ════════════════════════ */
+
+.centre { padding: 34px 16px; max-width: 460px; margin: 0 auto; }
+.champ { margin-bottom: 14px; }
+.champ label { display: block; font-size: 12px; color: var(--texte-doux); margin-bottom: 5px; }
+.champ input {
+  width: 100%; padding: 14px 16px; font-size: 16px;
+  border: 0; border-radius: 12px; outline: none;
+  background: var(--fond-2); color: var(--texte);
+}
+.champ input:focus { box-shadow: 0 0 0 1.6px var(--accent); }
+
+button.principal {
+  width: 100%; min-height: 52px; padding: 14px; border: 0; border-radius: 14px;
+  background: var(--accent); color: #fff;
+  font-size: 16px; font-weight: 600; cursor: pointer;
+}
+button.principal:disabled { opacity: .5; }
+button.discret {
+  width: 100%; padding: 11px; border: 0; background: none;
+  color: var(--texte-doux); font-size: 13px; cursor: pointer;
+}
+/* Le sélecteur vise aussi les liens : le téléchargement d'une photo ne peut
+ * pas être un bouton — c'est l'attribut `download` d'une ancre qui fait le
+ * travail — et il doit pourtant se lire comme les autres actions. */
+button.secondaire, a.secondaire {
+  padding: 10px 16px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--bordure); background: var(--fond);
+  color: var(--texte); font-size: 13px; font-weight: 600;
+}
+button.secondaire.danger, a.secondaire.danger { color: var(--alerte); border-color: var(--alerte); }
+.erreur { color: var(--alerte); font-size: 13px; margin: 10px 0; }
+
+.menu { display: flex; flex-direction: column; gap: 1px; margin-bottom: 8px; }
+.menu button {
+  text-align: left; padding: 14px 4px; font-size: 14.5px;
+  background: none; border: 0; border-bottom: 1px solid var(--case-vide);
+  color: var(--texte); cursor: pointer;
+}
+.menu button::after { content: '›'; float: right; color: var(--texte-doux); }
+/* Dans une liste de choix, le chevron mentirait : il annonce une page qui
+ * s'ouvre, pas une option qu'on coche. */
+.menu.choix button::after { content: ''; }
+.menu button.coche { color: var(--accent); font-weight: 700; }
+.menu button.coche::after { content: '✓'; color: var(--accent); }
+
+/* ═══════════════════════════ feuilles et messages ════════════════════════ */
+
+.feuille {
+  position: fixed; inset: 0; z-index: 30;
+  background: rgba(0, 0, 0, .5);
+  display: flex; align-items: flex-end;
+}
+.feuille .corps {
+  background: var(--fond); width: 100%; max-height: 90dvh;
+  border-radius: 28px 28px 0 0; overflow-y: auto;
+  padding: 10px 20px calc(28px + env(safe-area-inset-bottom));
+  animation: monte .22s cubic-bezier(.2, .8, .3, 1);
+}
+@keyframes monte { from { transform: translateY(28px); opacity: .5; } }
+/* La poignée grise en haut : elle dit que la feuille se referme en la tirant,
+ * ce qu'aucun libellé n'expliquerait mieux. */
+.feuille .poignee {
+  width: 34px; height: 4px; border-radius: 2px;
+  background: var(--bordure); margin: 0 auto 14px;
+}
+/* La croix de fermeture d'une feuille, posée dans son coin.
+ *
+ * `position: sticky` et non `absolute` : le corps de la feuille défile, et une
+ * croix qui part vers le haut avec le contenu ne sert plus à rien une fois
+ * qu'on a fait défiler. Elle reste donc en vue, et le `margin-bottom` négatif
+ * lui évite de pousser le contenu vers le bas. */
+.feuille .ferme-feuille {
+  position: sticky; top: 0; z-index: 2;
+  float: right; margin: -8px -4px -32px 0;
+}
+.feuille img.grande {
+  width: 100%; border-radius: 16px; margin-bottom: 12px;
+  background: var(--case-vide);
+}
+.feuille img.grande.silhouette { padding: 30px; }
+.feuille h2 { margin: 0 0 2px; font-size: 21px; font-weight: 800; }
+.feuille .latin { color: var(--texte-doux); font-size: 13px; }
+.feuille .corps a { color: var(--accent); }
+
+.message {
+  display: flex; flex-direction: column; gap: 4px; align-items: center;
+  padding: 64px 30px; text-align: center;
+}
+.message b { font-size: 15px; }
+.message .doux { font-size: 13px; }
+.vide { text-align: center; color: var(--texte-doux); padding: 60px 30px; font-size: 14px; }
+
+/* Le rond qui tourne, à la place d'un « Chargement… » : c'est ce que fait
+ * l'application, et ça n'a pas de langue. */
+.tourne { display: grid; place-items: center; padding: 46px; }
+.tourne span {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 3px solid var(--case-vide); border-top-color: var(--accent);
+  animation: tourner .9s linear infinite;
+}
+@keyframes tourner { to { transform: rotate(360deg); } }
+
+/* Le message éphémère. Fixé au-dessus de la barre d'onglets, jamais dessous :
+ * sur iPhone, le bas de l'écran appartient au navigateur. */
+.toast {
+  position: fixed; z-index: 40; left: 16px; right: 16px;
+  bottom: calc(var(--barre) + 26px + env(safe-area-inset-bottom));
+  padding: 12px 16px; border-radius: 14px;
+  background: #303338; color: #fff;
+  font-size: 13px; text-align: center;
+  animation: monte .2s ease-out;
+}
+.toast.erreur-toast { background: var(--alerte); }
+
+/* Sur un écran large — une tablette, un ordinateur — l'application resterait
+ * une colonne de téléphone étirée. On la borne, et la grille gagne des
+ * colonnes plutôt que de la largeur par case. */
+@media (min-width: 620px) {
+  #app { max-width: 560px; margin: 0 auto; box-shadow: 0 0 0 1px var(--case-vide); }
+  nav { left: 50%; right: auto; width: 560px; transform: translateX(-50%); }
+  .toast { left: 50%; right: auto; width: 528px; transform: translateX(-50%); }
+  .grille-dex { grid-template-columns: repeat(7, 1fr); }
+  .mur { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* Le champ de recherche pleine largeur — celui des amis. Même fond, même
+ * rayon que les autres champs, avec la loupe posée dedans. */
+.recherche {
+  display: flex; align-items: center; gap: 8px;
+  margin: 10px 16px 4px; padding: 11px 14px;
+  border-radius: 12px; background: var(--fond-2); color: var(--texte-doux);
+}
+.recherche input {
+  flex: 1; min-width: 0; border: 0; background: none; outline: none;
+  color: var(--texte); font-size: 15px;
+}
+
+.resume-paliers {
+  margin: 12px 16px 4px; padding: 12px 14px;
+  background: var(--fond-2); border-radius: 18px; font-size: 13px;
+}
+.resume-paliers .jauge { margin-top: 8px; }
+
+/* ═══════════════════ l'aperçu d'une espèce, en modale ════════════════════ */
+
+/* Une modale et non une feuille : elle demande une décision — « c'est
+ * celle-ci » ou « fermer » — et ne se referme pas d'un glissement distrait. */
+.voile-modale {
+  position: fixed; inset: 0; z-index: 35;
+  background: rgba(0, 0, 0, .55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 20px;
+}
+.modale {
+  display: flex; flex-direction: column;
+  width: 100%; max-width: 420px; max-height: 100%;
+  background: var(--fond); border-radius: 22px; overflow: hidden;
+  animation: apparait .2s cubic-bezier(.2, .8, .3, 1);
+}
+@keyframes apparait { from { transform: scale(.94); opacity: 0; } }
+
+.photo-apercu { height: 240px; flex: 0 0 auto; background: var(--case-vide); }
+.photo-apercu img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-apercu.vide {
+  height: 140px; display: grid; place-items: center;
+  color: var(--silhouette); font-size: 44px;
+}
+.photo-apercu.vide .silhouette { width: 110px; height: 110px; }
+
+/* Le bandeau ne s'affiche que quand l'espèce est signalée : un « non toxique »
+ * serait une promesse que personne ne peut tenir. */
+.bandeau-toxique {
+  flex: 0 0 auto; padding: 10px 16px;
+  background: var(--alerte); color: #fff;
+  font-size: 12.5px; font-weight: 900; letter-spacing: .06em;
+}
+
+.modale .dedans { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 18px 10px; }
+.modale h2 { margin: 0; font-size: 21px; font-weight: 800; line-height: 1.15; }
+.modale .latin { font-style: italic; color: var(--texte-doux); font-size: 13px; }
+.modale .article { font-size: 13.5px; line-height: 1.45; }
+.pastille-neutre {
+  display: inline-flex; align-items: center; padding: 4px 10px;
+  border-radius: 20px; background: var(--fond-2);
+  font-size: 12px; color: var(--texte-doux);
+}
+
+.modale .pied {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px 10px; border-top: 1px solid var(--case-vide);
+}
+.modale .pied .discret { flex: 0 0 auto; width: auto; }
+/* `width: auto` contre le `width: 100%` de `button.principal`.
+ *
+ * Dans une barre en `display: flex`, cette largeur devient la base de calcul du
+ * bouton : il réclamait toute la largeur du pied, passait derrière ses voisins
+ * et sortait du cadre — que `.modale { overflow: hidden }` coupe net. On
+ * voyait « Annuler » et plus rien à droite, alors que le bouton était bien
+ * dans le DOM et actif. Ici il prend la place qu'il lui faut, pas davantage. */
+.modale .pied .principal {
+  margin-left: auto; width: auto; flex: 0 0 auto; padding: 14px 22px;
+}
+
+.tourne.petit { padding: 14px; }
+.tourne.petit span { width: 18px; height: 18px; border-width: 2px; }
+
+/* ══════════════════════ chercher l'espèce soi-même ═══════════════════════ */
+
+/* Un écran plein, pas une feuille : la recherche prend le clavier, et une
+ * feuille à demi relevée ne laisserait plus voir les résultats. */
+.plein {
+  position: fixed; inset: 0; z-index: 32;
+  background: var(--fond); overflow-y: auto;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+
+/* Le filet de chargement, sous la recherche : il dit que ça travaille sans
+ * chasser les résultats déjà là. */
+.filet { height: 2px; margin: 6px 0 0; background: var(--case-vide); overflow: hidden; }
+.filet::after {
+  content: ''; display: block; width: 40%; height: 100%;
+  background: var(--accent); animation: glisse 1.1s ease-in-out infinite;
+}
+@keyframes glisse {
+  0% { transform: translateX(-100%); } 100% { transform: translateX(350%); }
+}
+
+.especes { padding-top: 4px; }
+.ligne.espece { gap: 12px; padding: 8px 16px; }
+.ligne.espece .texte { cursor: pointer; padding: 4px 0; }
+.apercu-espece {
+  width: 54px; height: 54px; flex: 0 0 auto; cursor: pointer;
+  display: grid; place-items: center; overflow: hidden;
+  border-radius: 12px; background: var(--case-vide);
+}
+.apercu-espece .decoupe { width: 100%; height: 100%; object-fit: contain; padding: 5px; }
+.apercu-espece .pleine { width: 100%; height: 100%; object-fit: cover; }
+.apercu-espece .silhouette { width: 100%; height: 100%; }
+.apercu-espece .rond { width: 100%; height: 100%; }
+.ligne .deja { color: var(--accent); font-size: 17px; font-weight: 700; }
+
+.marque-toxique {
+  display: inline-block; vertical-align: 1px; margin-left: 5px;
+  padding: 1px 5px; border-radius: 4px;
+  background: var(--alerte); color: #fff;
+  font-style: normal; font-size: 8.5px; font-weight: 900; letter-spacing: .04em;
+}
+
+/* Choisir soi-même un champignon n'écarte pas le risque : c'est même le moment
+ * où l'on se persuade d'avoir reconnu l'espèce. */
+.avertissement {
+  display: flex; gap: 9px; align-items: flex-start;
+  margin: 10px 16px; padding: 10px 12px 11px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--alerte) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--alerte) 35%, transparent);
+}
+.avertissement span { color: var(--alerte); font-size: 16px; line-height: 1.1; }
+.avertissement p { margin: 0; font-size: 11.5px; line-height: 1.35; color: #8c2a2a; }
+
+/* La piste n'est plus un bouton unique : sa vignette ouvre l'aperçu, son
+ * texte adopte l'espèce. */
+.piste.morte { opacity: .45; pointer-events: none; }
+.piste .texte { cursor: pointer; }
+
+/* Un interrupteur de réglage : libellé à gauche, bascule à droite. On garde
+ * la case native, restylée — un faux interrupteur en CSS perdrait le clavier
+ * et les lecteurs d'écran. */
+.bascule {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--case-vide); cursor: pointer;
+}
+.bascule .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.bascule .texte b { font-size: 14.5px; }
+.bascule .texte .doux { font-size: 11.5px; line-height: 1.35; }
+.bascule input {
+  flex: 0 0 auto; width: 46px; height: 28px; margin: 0;
+  appearance: none; cursor: pointer;
+  border-radius: 14px; background: var(--case-vide);
+  transition: background .18s;
+}
+.bascule input::after {
+  content: ''; display: block; width: 22px; height: 22px; margin: 3px;
+  border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+  transition: transform .18s;
+}
+.bascule input:checked { background: var(--accent); }
+.bascule input:checked::after { transform: translateX(18px); }
+
+/* Le timbre de carte, sous le résultat d'analyse. */
+.timbre {
+  height: 116px; margin-top: 12px;
+  border-radius: 12px; overflow: hidden; background: var(--case-vide);
+}
+/* Leaflet pose son propre fond blanc et ses contrôles : on ne garde que la
+   carte, le reste appartient à l'écran plein. */
+.timbre .leaflet-container { background: var(--case-vide); font: inherit; }
+
+.quand-ou {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-top: 8px; padding: 10px 12px;
+  border-radius: 12px; background: var(--fond-2);
+}
+.quand-ou.doute { background: color-mix(in srgb, #b08a00 8%, transparent); }
+.quand-ou .pictogramme { font-size: 14px; line-height: 1.3; }
+.quand-ou .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.quand-ou .texte b { font-size: 12.5px; }
+.quand-ou .texte .doux { font-size: 11.5px; }
+.quand-ou .alerte-douce {
+  font-size: 11px; line-height: 1.3; color: #8a6d00; margin-top: 2px;
+}
+
+/* Qui d'autre a vu la bête. Même gabarit que le rappel de date et lieu : ce
+   sont deux précisions sur la photo, elles doivent se ressembler. */
+.avec-qui {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 8px; padding: 10px 12px;
+  border-radius: 12px; background: var(--fond-2);
+}
+.avec-qui.cliquable { cursor: pointer; }
+.avec-qui .pictogramme { font-size: 14px; line-height: 1.3; }
+.avec-qui .texte {
+  flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.avec-qui .texte b { font-size: 13px; }
+.avec-qui .texte .doux { font-size: 13px; }
+.avec-qui .avatar { margin-left: -6px; box-shadow: 0 0 0 2px var(--fond-2); }
+
+/* La case à cocher d'une ligne d'ami, reprise du réglage de cadrage. */
+.ligne input[type="checkbox"] {
+  flex: 0 0 auto; width: 22px; height: 22px; margin: 0;
+  accent-color: var(--accent); cursor: pointer;
+}
+
+/* ═══════════════════════════ le fil des amis ═════════════════════════════ */
+
+.sorties { padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+.sortie {
+  background: var(--fond-2); border-radius: 18px; overflow: hidden;
+  border: 1.4px solid transparent;
+}
+/* Un liseré sur la plus belle prise de la sortie : on repère de loin celle qui
+   vaut le détour. */
+.sortie.belle.q4 { border-color: var(--q4); }
+.sortie.belle.q5 { border-color: var(--q5); }
+
+.sortie .tete {
+  display: flex; align-items: center; gap: 10px; padding: 12px 12px 8px;
+}
+/* Les avatars empilés : le groupe se lit avant même le texte.
+   La largeur de base n'est pas décorative — sans elle, une sortie à un seul
+   signataire donnait une pile de largeur nulle, et le titre passait par-dessus
+   l'avatar. */
+.sortie .pile { position: relative; width: 34px; height: 34px; flex: 0 0 auto; }
+.sortie .pile > span { position: absolute; top: 2px; }
+.sortie .pile .rang0 { left: 0; }
+.sortie .pile .rang1 { left: 18px; }
+.sortie .pile .rang2 { left: 36px; }
+.sortie .pile .rang3 { left: 54px; }
+.sortie .pile:has(.rang1) { width: 52px; }
+.sortie .pile:has(.rang2) { width: 70px; }
+.sortie .pile:has(.rang3) { width: 88px; }
+.sortie .pile .avatar { box-shadow: 0 0 0 2px var(--fond-2); }
+
+.sortie .tete .texte {
+  flex: 1; min-width: 0; display: flex; flex-direction: column;
+}
+.sortie .tete b, .sortie .tete .doux {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sortie .tete b { font-size: 14px; }
+.sortie .tete .doux { font-size: 12px; }
+.sortie .jour { font-size: 11px; flex: 0 0 auto; }
+
+/* Bande horizontale plutôt que grille : elle tient quel que soit le nombre de
+   photos, là où une grille imposerait une hauteur variable d'une carte à
+   l'autre. */
+.sortie .pellicule {
+  display: flex; gap: 6px; padding: 0 12px 10px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.sortie .pellicule::-webkit-scrollbar { display: none; }
+.sortie .cliche {
+  position: relative; flex: 0 0 auto; width: 86px; height: 86px;
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  background: var(--case-vide);
+}
+.sortie .cliche img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sortie .cliche .compte {
+  position: absolute; right: 4px; bottom: 4px;
+  padding: 1px 5px; border-radius: 10px;
+  background: rgba(0, 0, 0, .55); color: #fff; font-size: 10px;
+}
+
+.sortie .entrer {
+  width: 100%; padding: 10px; border: 0; cursor: pointer;
+  border-top: 1px solid var(--case-vide); background: none;
+  color: var(--accent); font-size: 13px; font-weight: 600;
+}
+
+/* ────────────────────── une sortie dépliée, plein écran ─────────────────── */
+
+.plein.sombre {
+  background: #000; color: #fff;
+  display: flex; flex-direction: column;
+}
+.plein.sombre header.sur-sombre {
+  background: #101114; flex: 0 0 auto;
+}
+.plein.sombre header h1 {
+  font-size: 16px; display: flex; flex-direction: column; line-height: 1.25;
+}
+.plein.sombre header .doux { font-size: 12px; color: #ffffff8a; font-weight: 400; }
+.plein.sombre header .retour { color: #fff; }
+
+.plein.sombre .scene {
+  flex: 1; min-height: 0; position: relative;
+  display: grid; place-items: center; overflow: hidden;
+}
+.plein.sombre .scene img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.plein.sombre .fleche {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 56px; border: 0; cursor: pointer;
+  background: rgba(0, 0, 0, .35); color: #fff; font-size: 26px; line-height: 1;
+  border-radius: 8px;
+}
+.plein.sombre .fleche.gauche { left: 6px; }
+.plein.sombre .fleche.droite { right: 6px; }
+
+.plein.sombre .bande {
+  flex: 0 0 auto; display: flex; gap: 6px; padding: 8px 12px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.plein.sombre .bande::-webkit-scrollbar { display: none; }
+.plein.sombre .bande img {
+  width: 46px; height: 46px; object-fit: cover; cursor: pointer;
+  border-radius: 8px; border: 1px solid #ffffff3d;
+}
+.plein.sombre .bande img.actif { border: 2px solid var(--accent); }
+
+.pied-sortie {
+  flex: 0 0 auto; padding: 12px 18px calc(24px + env(safe-area-inset-bottom));
+  background: #000;
+}
+.pied-sortie .ligne-titre { display: flex; align-items: flex-start; gap: 10px; }
+.pied-sortie .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pied-sortie .texte b { font-size: 16px; }
+.pied-sortie .texte .doux { font-size: 11.5px; color: #ffffff8a; }
+/* Sur fond noir, les boutons de réaction reprennent un fond clair : le gris
+   pâle du thème y disparaîtrait. */
+.pied-sortie .reactions button { background: #ffffff1f; border-color: transparent; }
+.pied-sortie .reactions button.choisie {
+  background: color-mix(in srgb, var(--accent) 34%, transparent);
+  border-color: var(--accent);
+}
+.pied-sortie .reactions button i { color: #ffffffa6; }
+
+/* ══════════════════════════ retoucher une photo ═══════════════════════════ */
+
+.plein.sombre.editeur .scene { padding: 10px; }
+
+/* Le cadre suit exactement la toile : le rectangle de recadrage est positionné
+   en pourcentages, il lui faut un parent à la bonne taille et pas un bloc qui
+   déborde. */
+.cadre-toile { position: relative; display: inline-block; max-height: 100%; }
+.cadre-toile canvas {
+  display: block; max-width: 100%; max-height: 100%;
+  /* Le doigt trace sur la toile : sans ça le navigateur y voit un défilement
+     et la page part au lieu du trait. */
+  touch-action: none; cursor: crosshair;
+}
+.cadre-coupe {
+  position: absolute; display: none; pointer-events: none;
+  border: 2px solid #fff;
+  /* L'ombre portée assombrit tout ce qui n'est pas gardé : on voit d'un coup
+     ce que la découpe va jeter. */
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, .55);
+}
+
+.editeur .outils {
+  flex: 0 0 auto; background: #101114;
+  padding: 10px 16px calc(20px + env(safe-area-inset-bottom));
+}
+.editeur .outils .segments {
+  margin: 0 0 10px; border-color: #ffffff3d;
+}
+.editeur .outils .segments button { color: #fff; border-left-color: #ffffff3d; }
+.editeur .outils .segments button.actif {
+  background: color-mix(in srgb, var(--accent) 34%, transparent);
+  color: #fff;
+}
+.editeur .outils .secondaire {
+  width: 100%; background: #ffffff14; color: #fff; border-color: #ffffff3d;
+}
+.editeur .outils .secondaire:disabled { opacity: .4; }
+.editeur .aide { font-size: 12px; margin: 0 0 8px; color: #ffffff8a; }
+
+.glissiere { display: flex; align-items: center; gap: 12px; padding: 5px 0; }
+.glissiere span { flex: 0 0 78px; font-size: 12.5px; color: #ffffffc4; }
+.glissiere input { flex: 1; accent-color: var(--accent); }
+
+/* ═════════════════════════ la sélection multiple ═════════════════════════ */
+
+.barre-selection {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; margin: 0 0 4px;
+  background: var(--fond-2);
+  position: sticky; top: 0; z-index: 9;
+}
+.barre-selection b { flex: 1; font-size: 15px; }
+
+/* Les non cochées se voilent : sans ça on ne distingue plus ce qui est pris
+   de ce qui reste. */
+.tuile.ecartee img { opacity: .45; }
+.tuile.choisie { outline: 3px solid var(--accent); outline-offset: -3px; }
+.tuile.choisie img { opacity: .75; }
+.tuile .coche {
+  position: absolute; left: 5px; top: 5px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-size: 14px; line-height: 22px; text-align: center;
+}
+/* Le rond de sélection reste discret tant qu'on n'a rien coché : il ne doit
+   pas concurrencer la photo, seulement se laisser trouver. */
+.tuile .cocher {
+  position: absolute; left: 5px; top: 5px;
+  width: 22px; height: 22px; padding: 0; cursor: pointer;
+  border: 0; border-radius: 50%;
+  background: rgba(0, 0, 0, .35); color: #fff;
+  font-size: 13px; line-height: 22px;
+  opacity: 0; transition: opacity .15s;
+}
+.tuile:hover .cocher { opacity: 1; }
+/* Sur un écran tactile il n'y a pas de survol : le rond y reste visible. */
+@media (hover: none) { .tuile .cocher { opacity: .8; } }
+
+/* ------------------------------------------------------------- attente et 3D
+ *
+ * L'attente n'est plus un point qui pulse mais un sujet qui tourne, dessiné
+ * sur un canvas par media.js. Le CSS ne fait plus que le placer.
+ */
+.attente {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 46px 0;
+}
+.attente-mot {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texte-doux);
+  text-align: center;
+}
+/* Le disque de l'attente. Nommé à part : `.pastille` désigne déjà les
+ * étiquettes de qualité et de toxicité, et les arrondir en cercle les rendait
+ * méconnaissables. */
+.pastille-attente { border-radius: 50%; display: block; }
+
+/* L'attente d'un rafraîchissement, quand la page a déjà du contenu. Posée en
+ * haut plutôt qu'au centre : elle ne doit pas masquer ce qu'on regarde. */
+.attente-flottante {
+  position: fixed;
+  top: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 40;
+}
+.attente-flottante .attente { padding: 0; }
+.attente-flottante .pastille-attente {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+}
+
+/* Une largeur par défaut, et un rapport carré.
+ *
+ * Un canevas sans règle de largeur s'affiche à sa largeur intrinsèque, que le
+ * dessin recalcule à chaque trame : c'est le mécanisme qui faisait grossir une
+ * vignette jusqu'à occuper la page. La sécurité tient aux deux bouts — ici, et
+ * dans `ajuste()` qui fixe désormais la taille d'affichage. Un `style` en ligne
+ * l'emporte de toute façon sur cette règle, donc les appels qui donnent une
+ * taille précise ne changent pas de comportement. */
+.modele { display: block; width: 100%; aspect-ratio: 1; }
+/* Le curseur dit que l'objet se prend : sans lui, personne ne devine qu'on
+ * peut le faire tourner. */
+canvas.modele[data-doigt="oui"] { cursor: grab; }
+canvas.modele[data-doigt="oui"]:active { cursor: grabbing; }
+
+/* ------------------------------------------------------------------ vitrine */
+
+/* La bascule, posée sur le coin de l'écusson. Discrète — un demi-voile et un
+ * pictogramme — parce qu'elle sert une fois de temps en temps, pas à chaque
+ * ouverture. */
+.piece-coin { position: relative; flex: none; }
+.bascule-bandeau {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 21px;
+  height: 21px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, .55);
+  color: #fff;
+  font-size: 11px;
+  line-height: 21px;
+  cursor: pointer;
+}
+.palier .piece {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(155, 107, 223, .14);
+}
+.jauge.violette > div { background: #9b6bdf; }
+
+/* Une rangée centrée — un bouton seul au milieu de la page.
+ *
+ * Surtout PAS `.centre` : cette classe-là est le conteneur principal de la
+ * connexion, de la capture et des formulaires. En lui donnant `display:flex`,
+ * j'avais mis leurs enfants côte à côte — le dépôt, le titre « À trancher » et
+ * les vignettes se retrouvaient sur une seule ligne, chacun étranglé à un mot
+ * par ligne. Une classe générique n'est jamais un bon endroit où poser une
+ * mise en page particulière. */
+.rangee-centree { display: flex; justify-content: center; }
+.titre-vitrine { margin: 0 0 4px; font-size: 21px; }
+.explication { line-height: 1.4; }
+
+/* Les dix pièces : la photo d'abord, le nom ensuite. C'est ce qu'on a
+ * rapporté, pas une liste de noms. */
+.pieces { list-style: none; margin: 0; padding: 0 16px; }
+.pieces li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+}
+.pieces .rang { width: 22px; text-align: center; color: var(--texte-doux); font-weight: 700; }
+.pieces .prise {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--fond-2);
+  flex: none;
+}
+.pieces .prise.vide { display: inline-block; }
+.pieces .nom { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pieces .nom b, .pieces .nom i {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pieces .nom i { font-size: 11.5px; }
+.pieces .pts { font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 10px; }
+
+.grille-rangs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 12px;
+  padding: 14px;
+  overflow-y: auto;
+}
+.grille-rangs figure { margin: 0; text-align: center; }
+.grille-rangs figure > canvas {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 14px;
+  background: var(--fond-2);
+}
+.grille-rangs figcaption { font-size: 11px; font-weight: 700; margin-top: 4px; }
+.grille-rangs .ferme figcaption { color: var(--texte-doux); }
+.panneau.grand { max-height: 84vh; display: flex; flex-direction: column; }
+
+/* --------------------------------------------------- espèces des joueurs */
+
+/* Personne ne valide ces ajouts — c'est le prix de pouvoir indexer un cultivar
+ * que GBIF ignorera toujours. En échange, la provenance est affichée : on sait
+ * de qui l'on tient l'information. */
+.bandeau-ajout {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(224, 138, 11, .13);
+  border: 1px solid rgba(224, 138, 11, .45);
+}
+.bandeau-ajout p { margin: 0; font-size: 12px; line-height: 1.35; color: #8a5200; }
+
+.formulaire { padding: 4px 16px 40px; display: flex; flex-direction: column; gap: 4px; }
+.formulaire .etiquette {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: var(--texte-doux);
+  margin-top: 14px;
+}
+.formulaire input, .formulaire textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+  background: var(--fond);
+  color: inherit;
+  font: inherit;
+  box-sizing: border-box;
+}
+.formulaire textarea { resize: vertical; line-height: 1.4; }
+.avec-bouton { display: flex; gap: 8px; }
+.avec-bouton input { flex: 1; }
+.avec-bouton button {
+  width: 46px;
+  border: 1px solid var(--bordure);
+  border-radius: 12px;
+  background: var(--fond-2);
+  color: inherit;
+  font-size: 17px;
+  cursor: pointer;
+}
+.formulaire .trouve { margin: 6px 0 0; font-size: 12px; }
+.formulaire .primaire { margin-top: 22px; }
+
+.regnes { display: flex; gap: 8px; }
+.carte-regne {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 4px;
+  border: 1.6px solid transparent;
+  border-radius: 16px;
+  background: var(--fond-2);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.carte-regne span { font-size: 24px; }
+.carte-regne b { font-size: 12px; }
+.carte-regne.actif { border-color: var(--c); color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
+
+.mes-especes { list-style: none; margin: 0; padding: 12px 16px 90px; }
+.mes-especes li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 6px 12px 14px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  background: var(--fond-2);
+}
+.mes-especes li.retiree { opacity: .55; }
+.mes-especes .corps { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.mes-especes .corps span { font-size: 11.5px; }
+.retiree-mot { font-style: normal; font-size: 11px; color: var(--alerte); }
+.outil.danger { color: var(--alerte); }
+.haut-page { padding: 14px 16px 4px; }
+.rangee-centree.haut-page { padding: 14px 16px 4px; }
+.vide-bloc { padding: 50px 28px; text-align: center; }
+.vide-bloc p { margin: 0 0 8px; line-height: 1.4; }
+
+/* Le repère « à situer », en haut à gauche d'une vignette.
+ *
+ * Seulement sur ses propres photos : on ne peut corriger que les siennes, et
+ * signaler un manque qu'on ne peut pas combler encombre la grille pour rien.
+ * Deux pictogrammes plutôt qu'un générique — savoir s'il manque le lieu, la
+ * date ou les deux évite d'ouvrir la photo pour le découvrir. */
+.repere-situer {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  padding: 2px 5px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, .55);
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 1px;
+}
+
+/* Les réglages de notification : une ligne par catégorie, un interrupteur. */
+.reglages { list-style: none; margin: 0; padding: 10px 16px 90px; }
+.reglages li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--bordure);
+}
+.reglages .corps { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.reglages .corps span { font-size: 12px; line-height: 1.35; }
+/* L'interrupteur des réglages de notification.
+ *
+ * Pas `.bascule` : cette classe existe déjà, avec une structure différente —
+ * elle stylise l'`input` lui-même là où celui-ci passe par un `span`. Les deux
+ * règles s'empilaient et cassaient les interrupteurs d'origine. */
+.interrupteur { position: relative; width: 46px; height: 27px; flex: none; }
+.interrupteur input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.interrupteur span {
+  position: absolute;
+  inset: 0;
+  border-radius: 27px;
+  background: var(--bordure);
+  transition: background .16s;
+  pointer-events: none;
+}
+.interrupteur span::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform .16s;
+}
+.interrupteur input:checked + span { background: var(--accent); }
+.interrupteur input:checked + span::after { transform: translateX(19px); }
+
+/* ------------------------------------------------------------------ lasso
+ *
+ * La consigne change de couleur avec l'état du tracé. Le vert dit « c'est
+ * bon », l'orange dit « ça marchera mais pas comme tu crois » — et il faut
+ * que la nuance se voie sans lire. */
+.consigne {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--texte-doux);
+}
+.consigne.bonne { color: #0e8f6f; }
+.consigne.tiede { color: #b06b00; }
+.rangee { display: flex; gap: 8px; margin-top: 10px; }
+.rangee button { flex: 1; }
+.rangee button[disabled] { opacity: .5; }
+
+/* ═══════════════════════ passe responsive ═══════════════════════════════
+ *
+ * Trois défauts corrigés ici, tous vérifiables dans le code plutôt qu'à l'œil.
+ */
+
+/* 1. L'écran de connexion ne passe pas par `<main>` : `dessine()` court-circuite
+ *    et écrit directement dans `#app`. Il n'héritait donc d'aucune marge de
+ *    sécurité, et son contenu passait sous l'encoche. Il n'était pas centré non
+ *    plus : sur un grand écran, tout restait collé en haut. */
+.centre.connexion {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding:
+    max(34px, calc(env(safe-area-inset-top) + 24px))
+    max(16px, env(safe-area-inset-left))
+    max(34px, calc(env(safe-area-inset-bottom) + 24px))
+    max(16px, env(safe-area-inset-right));
+}
+
+/* 2. Les règnes sont passés de trois à quatre. `.puces` défile
+ *    horizontalement : sur la capture, où ils sont censés être centrés, le
+ *    quatrième sortait du cadre et le centrage ne faisait plus rien. Ici on les
+ *    laisse revenir à la ligne — c'est un choix, pas une liste à parcourir. */
+.puces.regnes-capture {
+  flex-wrap: wrap;
+  justify-content: center;
+  overflow-x: visible;
+}
+
+/* 3. Les écrans en surimpression — formulaires, éditeur, choix d'espèce —
+ *    n'avaient de marge de sécurité qu'en bas. En paysage sur un iPhone,
+ *    l'encoche mange le bord gauche ou droit selon le sens. */
+.plein {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.plein > header { padding-top: max(10px, env(safe-area-inset-top)); }
+
+/* Une image ne doit jamais élargir la page : c'est la cause la plus banale
+ * d'un défilement horizontal, et la plus difficile à repérer après coup. */
+img, canvas, model-viewer { max-width: 100%; }
+
+
+
+/* Les cartes de règne du formulaire : à quatre, elles ne tiennent plus en
+ * ligne sur un écran étroit. */
+@media (max-width: 380px) {
+  .regnes { flex-wrap: wrap; }
+  .carte-regne { flex: 1 1 calc(50% - 4px); }
+}
+
+/* Les points d'une pièce de vitrine prennent la couleur de sa qualité, comme
+ * partout ailleurs : une légendaire doit se voir sans lire le chiffre. */
+.pieces .pts.q1 { color: var(--q1); background: color-mix(in srgb, var(--q1) 16%, transparent); }
+.pieces .pts.q2 { color: var(--q2); background: color-mix(in srgb, var(--q2) 16%, transparent); }
+.pieces .pts.q3 { color: var(--q3); background: color-mix(in srgb, var(--q3) 16%, transparent); }
+.pieces .pts.q4 { color: var(--q4); background: color-mix(in srgb, var(--q4) 16%, transparent); }
+.pieces .pts.q5 { color: var(--q5); background: color-mix(in srgb, var(--q5) 16%, transparent); }
+
+/* ═══════════════════════ tablette et grand écran ════════════════════════
+ *
+ * Le site se bornait à 560 px au-delà de 620 : une colonne de téléphone
+ * centrée sur un écran vide. C'est raisonnable sur un portable en paysage,
+ * absurde sur un iPad ou un moniteur.
+ *
+ * On élargit par paliers, et surtout on densifie les grilles : sur une
+ * tablette, sept cases par ligne laissent des vignettes énormes et obligent à
+ * défiler pour rien.
+ */
+@media (min-width: 900px) {
+  #app { max-width: 860px; }
+  nav { width: 860px; }
+  .toast { width: 820px; }
+  .grille-dex { grid-template-columns: repeat(9, 1fr); }
+  .mur { grid-template-columns: repeat(6, 1fr); }
+  /* Les formulaires ne suivent pas : une ligne de saisie de 860 px est
+   * pénible à lire et à viser. */
+  .centre, .formulaire { max-width: 620px; margin-left: auto; margin-right: auto; }
+  .grille-rangs { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
+
+@media (min-width: 1280px) {
+  #app { max-width: 1100px; }
+  nav { width: 1100px; }
+  .toast { width: 1060px; }
+  .grille-dex { grid-template-columns: repeat(12, 1fr); }
+  .mur { grid-template-columns: repeat(8, 1fr); }
+}
+
+/* En paysage sur un téléphone, la hauteur devient la ressource rare : la
+ * visionneuse 3D et la carte mangeaient tout l'écran. */
+@media (max-height: 500px) and (orientation: landscape) {
+  /* En paysage, la hauteur est la ressource rare. */
+  .attente { padding: 18px 0; }
+  .grand-modele { height: 55vh; }
+}
+
+/* ══════════════════════ carte, lieux et photos à situer ═════════════════ */
+
+.lieux { padding: 0 16px 90px; }
+.lieux section { margin-bottom: 22px; }
+.lieux h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+.mur.serre { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+
+.puce.alerte { margin-left: auto; }
+
+.a-situer { list-style: none; margin: 0; padding: 8px 16px 90px; }
+.a-situer li {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  margin-bottom: 8px;
+  border-radius: 14px;
+  background: var(--fond-2);
+  cursor: pointer;
+}
+.a-situer li.prise { background: color-mix(in srgb, var(--accent) 14%, var(--fond-2)); }
+.a-situer .coche { width: 18px; text-align: center; color: var(--accent); font-size: 15px; }
+.a-situer img { width: 54px; height: 54px; border-radius: 10px; object-fit: cover; flex: none; }
+.a-situer .corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.a-situer .manques { display: flex; gap: 5px; }
+.a-situer .manques i {
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 8px;
+  color: #8a5200;
+  background: rgba(224, 138, 11, .16);
+}
+
+/* La fenêtre des rangs, posée sur la modale que la feuille connaît déjà. */
+.modale-rangs { max-width: 560px; }
+.tete-rangs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 8px;
+}
+.tete-rangs .fermer {
+  border: 0; background: none; color: var(--texte-doux);
+  font-size: 17px; cursor: pointer;
+}
+
+/* ═══════════════════════════════ succès ═════════════════════════════════ */
+
+/* Le compteur, en tête. Gros chiffre, unité discrète : c'est le score qu'on
+ * regarde, pas le mot. */
+.compte-succes {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 6px 18px 12px;
+}
+.compte-succes b { font-size: 26px; font-weight: 800; letter-spacing: -.5px; }
+.compte-succes .tombe {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+}
+
+.grille-succes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 11px;
+  padding: 0 16px 14px;
+}
+
+/* Une tuile.
+ *
+ * Verrouillée : fond neutre, silhouette, texte en retrait. Débloquée : la
+ * couleur revient et un liseré la détache. L'écart doit se voir de loin,
+ * sans lire — c'est tout l'intérêt d'une grille.
+ */
+.succes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 7px 9px;
+  border: 1px solid var(--bordure);
+  border-radius: 16px;
+  background: var(--fond-2);
+  color: var(--texte-doux);
+  font: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform .12s, border-color .15s;
+}
+.succes:active { transform: scale(.97); }
+
+/* `remplit` et non `plein` : `.plein` est déjà pris, plus haut dans cette
+ * feuille, par l'écran plein de la recherche — `position: fixed; inset: 0`.
+ * Chaque vignette de succès héritait donc d'une position fixe aux dimensions de
+ * la fenêtre, hors du flux : la tuile ne faisait plus que la hauteur de son
+ * texte, et une grenouille de mille pixels couvrait la page.
+ *
+ * La feuille n'est pas cloisonnée. Un nom générique posé sur un élément
+ * particulier finit toujours par rencontrer un autre élément qui le porte déjà. */
+.succes canvas.remplit {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  /* Verrouillé, le sujet est déjà noir : on l'atténue encore pour qu'il se
+   * lise comme une absence et non comme une image sombre. */
+  opacity: .38;
+}
+.succes.acquis canvas.remplit { opacity: 1; }
+
+.succes .nom {
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.succes.acquis {
+  color: var(--texte);
+  background: var(--fond);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+/* Celui qui vient de tomber : un liseré franc, une seule fois. */
+.succes.tombe {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Le cadenas, discret, dans le coin. Il dit « verrouillé » sans écrire le
+ * mot, et libère la place pour le nom. */
+.succes:not(.acquis)::after {
+  content: '🔒';
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  font-size: 10px;
+  opacity: .55;
+}
+
+/* L'avancement, en barre plutôt qu'en chiffres seuls : « 12/15 » se lit,
+ * mais une barre se voit. */
+.succes .part {
+  width: 100%;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--case-vide);
+  overflow: hidden;
+  font-size: 0;
+}
+.succes .part i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+}
+.succes .chiffre { font-size: 9.5px; margin-top: -2px; }
+
+/* ---- la fiche ---- */
+
+.fiche-succes {
+  max-width: 400px;
+  padding: 0 0 26px;
+  text-align: center;
+  overflow: hidden;
+}
+/* Le modèle occupe le haut de la carte, sur un fond légèrement teinté qui le
+ * détache : posé sur le blanc, il flottait. */
+.grand-modele {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 220px;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--accent) 9%, var(--fond-2)), var(--fond-2));
+}
+.grand-modele model-viewer {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  /* Le modèle capte le geste pour tourner. Dans la fiche c'est voulu — on
+   * l'ouvre pour ça — mais la fiche est courte et ne défile pas, donc rien
+   * n'est volé. C'était l'inverse en tête de page : `camera-controls` y
+   * bloquait le défilement de tout l'écran. */
+  touch-action: none;
+}
+.grand-modele canvas { opacity: .4; }
+
+.fiche-succes h2 { margin: 16px 20px 4px; font-size: 20px; }
+.obtenu-le {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.condition {
+  margin: 16px 26px 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.condition.cachee { color: var(--texte-doux); font-style: italic; }
+.fiche-succes .lien { margin-top: 12px; }
+.fiche-succes .primaire { margin: 18px 26px 0; width: calc(100% - 52px); }
+
+@media (min-width: 900px) {
+  .grille-succes { grid-template-columns: repeat(5, 1fr); }
+  .grand-modele { height: 280px; }
+}
+@media (min-width: 1280px) { .grille-succes { grid-template-columns: repeat(7, 1fr); } }
+
+/* ═══════════════════════════════ thème sombre ═══════════════════════════
+ *
+ * On ne redéfinit que les couleurs de surface et de texte. Les cinq teintes de
+ * qualité et l'accent restent : ce sont des repères que le joueur apprend, les
+ * changer d'un thème à l'autre reviendrait à lui demander de réapprendre.
+ *
+ * Les fonds ne sont pas noirs mais très sombres et légèrement bleutés. Le noir
+ * pur fait vibrer le texte blanc sur les écrans OLED, et une photo de nature
+ * posée dessus paraît découpée aux ciseaux.
+ *
+ * `prefers-color-scheme` et rien d'autre : pas d'interrupteur. Quelqu'un qui
+ * bascule son téléphone en sombre le soir ne veut pas le refaire ici.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #121316;
+    --fond-2: #1b1d22;
+    --case-vide: #23262c;
+    --silhouette: #3a3e46;
+    --bordure: #35383f;
+    --texte: #eceef2;
+    --texte-doux: #9aa0ab;
+    /* L'accent est éclairci : à luminosité égale, une couleur saturée paraît
+     * plus sombre sur fond noir que sur fond blanc. */
+    --accent: #2fc3c1;
+    --accent-sombre: #1d8f8e;
+    --alerte: #ff6b6b;
+  }
+
+  /* Les images de fiche viennent de Wikipédia sur fond blanc : sans ce léger
+   * voile, elles font des trous de lumière dans la page. */
+  .feuille img, .modale img { filter: brightness(.92); }
+
+  /* Le voile des tuiles était calculé pour du texte blanc sur photo claire ;
+   * sur fond sombre il n'a plus besoin d'être aussi appuyé. */
+  .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+
+  /* La barre du bas se détache du fond, sinon elle flotte. */
+  nav { border-top: 1px solid var(--bordure); }
+}
+
+/* Les photos rangées dans la fiche d'une case. Le mur générique porte ses
+ * propres marges (il vit d'ordinaire seul sur un écran) ; ici il est déjà dans
+ * un corps qui a les siennes, et les deux se cumulaient. */
+.photos-case { margin-top: 16px; }
+.photos-case .mur { padding: 0; }
+.photos-case .titre-section { margin: 14px 0 8px; }
+
+/* ═══════════════════════════════ animations ═════════════════════════════
+ *
+ * Toutes sont des animations d'apparition, jamais des transitions entre deux
+ * états : `dessine()` remplace le contenu de la page d'un bloc, il n'y a donc
+ * pas d'« avant » avec quoi interpoler. Voir `joueLesEntrees()` dans app.js
+ * pour savoir quand elles sont posées — la réponse courte est « seulement
+ * quand l'écran a vraiment changé ».
+ *
+ * Les durées sont courtes à dessein. 180 à 280 ms : assez pour que l'oeil
+ * suive le mouvement, assez peu pour qu'une personne qui connaît l'application
+ * par coeur ne se sente jamais retenue. Au-delà de 300 ms, une interface
+ * devient lente avant de devenir élégante.
+ *
+ * La courbe est la même partout : départ franc, arrivée amortie. C'est celle
+ * d'un objet qu'on pose, pas d'un mécanisme.
+ */
+:root { --ressort: cubic-bezier(.22, 1, .36, 1); }
+
+@keyframes entree-ecran {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+main.entre { animation: entree-ecran .26s var(--ressort) both; }
+
+/* La cascade des grilles. Le décalage vient de `--rang`, posé en JS : on ne
+ * sait pas d'avance combien il y a de vignettes. 22 ms entre chacune — assez
+ * pour lire un mouvement de vague, pas assez pour attendre. */
+@keyframes surgissement {
+  from { opacity: 0; transform: scale(.9); }
+  to   { opacity: 1; transform: none; }
+}
+.surgit {
+  animation: surgissement .28s var(--ressort) both;
+  animation-delay: calc(var(--rang, 0) * 22ms);
+}
+
+/* Les panneaux montent du bas, comme sur l'application. Leur fond s'éclaircit
+ * en même temps : les faire apparaître d'un coup donne l'impression d'un
+ * changement de page plutôt que d'une couche par-dessus. */
+@keyframes montee-feuille {
+  from { transform: translateY(28px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes voile-apparait { from { opacity: 0; } to { opacity: 1; } }
+
+.feuille.entre { animation: voile-apparait .18s ease-out both; }
+.feuille.entre .corps { animation: montee-feuille .3s var(--ressort) both; }
+
+/* Les modales, elles, arrivent depuis le centre : elles n'ont pas de bord
+ * d'écran d'où venir. */
+@keyframes eclosion {
+  from { opacity: 0; transform: scale(.94) translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.voile-modale { animation: voile-apparait .16s ease-out both; }
+.modale.entre, .fiche-succes.entre { animation: eclosion .26s var(--ressort) both; }
+
+/* Le compteur qui change de valeur sans changer de place. Deux rebonds courts,
+ * et une teinte qui passe par le blanc : c'est le changement qu'on signale,
+ * pas l'élément. */
+@keyframes sursaut {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.45); }
+  60%  { transform: scale(.92); }
+  100% { transform: scale(1); }
+}
+.sursaut { animation: sursaut .45s var(--ressort); }
+
+/* Les messages fugaces ont déjà leur `monte` définie plus haut ; on ne fait
+ * qu'en adoucir la courbe. Leur redonner un `transform` serait une faute : ils
+ * sont tendus d'un bord à l'autre, pas centrés par translation. */
+.toast { animation-timing-function: var(--ressort); }
+
+/* Le retour au doigt. Sur un écran tactile il n'y a pas de survol : sans un
+ * enfoncement visible, on ne sait pas si l'appui a été pris. 60 ms, parce
+ * qu'au-delà on relâche avant d'avoir vu la réponse. */
+button, .tuile, .case-dex, .puce, .pastille {
+  transition: transform .06s ease-out, filter .12s ease-out;
+}
+button:active, .tuile:active, .case-dex:active, .puce:active, .pastille:active {
+  transform: scale(.96);
+}
+
+/* ── ce qui n'est pas négociable ──────────────────────────────────────────
+ *
+ * Certaines personnes ont des vertiges avec le mouvement à l'écran, et le
+ * système d'exploitation le sait déjà : il le dit ici. On ne supprime pas les
+ * animations — un changement instantané est lui-même désorientant — on les
+ * réduit à un fondu, qui ne déplace rien.
+ */
+@media (prefers-reduced-motion: reduce) {
+  /* Un fondu franc plutôt qu'un clignement : à 150 ms on ne voyait rien du
+   * tout, et l'interface donnait l'impression de ne pas répondre. Le fondu ne
+   * déplace rien — c'est le mouvement qui pose problème, pas la durée. */
+  main.entre, .surgit, .feuille.entre .corps, .modale.entre,
+  .fiche-succes.entre, .toast {
+    animation-name: voile-apparait;
+    animation-duration: .3s;
+    animation-delay: 0s;
+  }
+  .sursaut { animation: none; }
+  button, .tuile, .case-dex, .puce, .pastille { transition: none; }
+  button:active, .tuile:active, .case-dex:active,
+  .puce:active, .pastille:active { transform: none; }
+}
+
+/* ═══════════════════════════ filtres de galerie ═════════════════════════
+ *
+ * Noms préfixés `-galerie` / `filtres-` à dessein. La feuille n'est pas
+ * cloisonnée : une classe générique comme `.ligne` ou `.entete` posée ici
+ * s'appliquerait à des écrans qui ne l'ont jamais demandée — c'est arrivé, et
+ * la page en question est restée cassée jusqu'à ce qu'on la regarde.
+ */
+.entete-galerie {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px 4px;
+}
+/* Les onglets prennent la place disponible, le bouton de filtres reste collé
+ * à droite quelle que soit la largeur. */
+.entete-galerie .puces { flex: 1; min-width: 0; }
+.entete-galerie > .puce { flex: 0 0 auto; }
+
+.filtres-galerie {
+  margin: 4px 14px 10px; padding: 12px 14px 14px;
+  border-radius: 16px; background: var(--fond-2);
+  border: 1px solid var(--bordure);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.filtres-galerie > label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--texte-doux); margin-top: 6px;
+}
+.filtres-galerie > label:first-child { margin-top: 0; }
+.filtres-galerie .champ { width: 100%; }
+
+.ligne-filtres { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.ligne-filtres .champ { flex: 1; min-width: 0; }
+.ligne-filtres button { flex: 1; }
+
+/* Une vraie case à cocher avec son libellé. À ne pas confondre avec
+ * `.interrupteur`, qui est un bouton bascule de 46 px de large : son `span`
+ * est le rail, pas du texte. */
+.case-a-cocher {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13.5px; cursor: pointer;
+}
+.case-a-cocher input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* Le bouton de sortie d'un écran vide, quand le vide vient d'un filtre. */
+.message button { margin-top: 12px; }
+
+/* ═══════════════════════════ panneau « situer » ═════════════════════════
+ *
+ * Une modale plus haute que les autres : elle contient une carte, et une carte
+ * de moins de deux cents pixels ne sert à rien — on n'y reconnaît pas l'endroit
+ * qu'on cherche à désigner.
+ */
+.modale-situer { max-width: 560px; }
+
+/* Les vignettes posées sur la carte.
+ *
+ * `.pin-vide` neutralise le fond blanc et la bordure que Leaflet met sur ses
+ * `divIcon` : sans ça chaque photo arrive dans un petit cadre gris.
+ *
+ * Le rond plutôt que le carré : à cette taille il se distingue mieux du
+ * paysage, et deux ronds qui se touchent se lisent encore comme deux photos. */
+.pin-vide { background: none; border: 0; }
+.pin-photo {
+  /* Taille fixe et non négociable : c'est elle qui fait que toutes les bulles
+     se ressemblent. La photo est un fond, pas une `<img>` — Leaflet remet
+     `width: auto` sur toute image de son calque de marqueurs, et la bulle
+     devenait une ellipse à la mesure du fichier. */
+  display: block; position: relative;
+  width: 44px; height: 44px; flex: 0 0 auto;   /* écrasé en ligne par le réglage */
+  /* `cover` avec un point de visée haut : sur une photo portrait, le sujet est
+     presque toujours dans le tiers supérieur, et un cadrage centré coupait les
+     têtes pour garder du sol. */
+  background-size: cover; background-position: center 35%;
+  background-repeat: no-repeat; background-color: var(--case-vide);
+  border-radius: 50%;
+  border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .45);
+}
+/* Un paquet se signale par deux ronds décalés derrière le premier : on voit
+   qu'il y a de l'épaisseur avant même de lire le compteur. */
+.pin-photo.pile::before,
+.pin-photo.pile::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: 50%; background: var(--fond-2);
+  border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0, 0, 0, .35);
+}
+.pin-photo.pile::before { transform: translate(5px, 5px); z-index: -2; }
+.pin-photo.pile::after { transform: translate(2.5px, 2.5px); z-index: -1; }
+/* Le compteur d'un paquet, posé sur le bord. Le chiffre dit combien de photos
+   se cachent dessous — sans lui, on croirait qu'il n'y en a qu'une. */
+.pin-photo .nb {
+  position: absolute; right: -4px; bottom: -4px;
+  min-width: 20px; padding: 1px 5px;
+  border-radius: 11px; border: 2px solid #fff;
+  background: var(--accent); color: #fff;
+  font-size: 11px; font-weight: 700; font-style: normal;
+  text-align: center; line-height: 1.5;
+}
+
+/* L'anneau rouge : une photo d'ami qu'on n'a pas encore ouverte. C'est le
+   signal que la carte est faite pour montrer. */
+.pin-photo.neuf { border-color: var(--alerte); box-shadow: 0 0 0 2.5px var(--alerte), 0 2px 8px rgba(0, 0, 0, .45); }
+.pin-photo.neuf .nb { background: var(--alerte); }
+/* À qui est la photo : la tête de l'auteur, en bas à gauche de la bulle. */
+.pin-photo .auteurs { position: absolute; left: -5px; bottom: -4px; display: flex; }
+.pin-photo .auteurs .avatar { border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .4); margin-right: -8px; }
+
+/* ── la carte sociale ─────────────────────────────────────────────────── */
+.filtres-carte { margin-bottom: 8px; }
+.filtres-carte .entete-galerie { margin-bottom: 2px; }
+.filtres-carte .filtres-galerie { margin-top: 8px; }
+.filtres-galerie .liste-auteurs .badge-neuf { margin-left: auto; }
+.filtres-galerie input[type=search] { margin: 0 0 6px; }
+/* L'aperçu de taille dans le choix des bulles : un rond à l'échelle. */
+.apercu-bulle {
+  display: inline-block; border-radius: 50%; vertical-align: middle; margin-right: 5px;
+  background: currentColor; opacity: .7;
+}
+.puce.ami .badge-neuf { position: absolute; top: -6px; right: -6px; }
+.filtres-carte .puces { padding-bottom: 6px; }
+.filtres-carte .puces.quoi { align-items: center; }
+.filtres-carte .sep { flex: 0 0 1px; height: 22px; background: var(--bordure); margin: 0 2px; }
+/* Une puce avec une tête : l'ami qu'on filtre, et combien de neuf chez lui. */
+.puce.ami { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px 4px 5px; position: relative; }
+.puce.ami .avatar { flex: 0 0 auto; }
+.puce.regne { padding: 6px 9px; font-size: 15px; }
+.badge-neuf {
+  display: inline-grid; place-items: center; min-width: 18px; height: 18px;
+  padding: 0 5px; border-radius: 9px; margin-left: 2px;
+  background: var(--alerte); color: #fff; font-size: 11px; font-weight: 800;
+  font-style: normal; line-height: 1;
+}
+.scene-carte { position: relative; margin: 0 16px; isolation: isolate; }
+.scene-carte #carte {
+  height: calc(100dvh - 268px); min-height: 320px;
+  border-radius: 16px; z-index: 0;
+}
+.scene-carte.liste { min-height: 200px; }
+.scene-carte.liste .lieux { padding-top: 44px; }
+.scene-carte .flottants {
+  position: absolute; top: 10px; left: 10px; z-index: 2;
+  display: flex; gap: 6px;
+}
+.scene-carte .flottants button {
+  padding: 7px 11px; border-radius: 20px; border: 0; cursor: pointer;
+  background: color-mix(in srgb, var(--fond) 88%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  color: var(--texte); font-size: 12.5px; font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+.carte-vide {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; text-align: center; padding: 24px;
+  background: color-mix(in srgb, var(--fond) 72%, transparent);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  border-radius: 16px; pointer-events: none;
+}
+.scene-carte.liste .carte-vide { position: static; background: none; backdrop-filter: none; min-height: 200px; }
+.carte-vide b { font-size: 16px; }
+.carte-vide .secondaire { pointer-events: auto; margin-top: 8px; }
+/* Le fil des nouveautés, en bandeau sur le bas de la carte. */
+.fil-nouveautes {
+  position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 2;
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; border-radius: 16px;
+  background: color-mix(in srgb, var(--fond) 86%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
+}
+.fil-nouveautes .defile { flex: 1; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px; }
+.fil-nouveautes .defile::-webkit-scrollbar { display: none; }
+.nouveaute {
+  position: relative; flex: 0 0 auto; width: 58px; height: 58px; padding: 0;
+  border: 0; background: none; cursor: pointer;
+}
+.nouveaute .photo {
+  display: block; width: 100%; height: 100%; border-radius: 14px;
+  background-size: cover; background-position: center 35%; background-color: var(--case-vide);
+  border: 2.5px solid var(--alerte); box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+}
+.nouveaute .avatar { position: absolute; right: -4px; bottom: -4px; border: 2px solid var(--fond); }
+.fil-nouveautes .tout-vu { flex: 0 0 auto; white-space: nowrap; padding: 6px 8px; font-size: 12px; }
+.compte-carte { text-align: center; font-size: 12.5px; margin: 8px 0 0; }
+/* Dans les planches de lieu et la liste : la tuile pas encore vue porte un
+   anneau rouge, et la tête de l'auteur. */
+.tuile { position: relative; }
+.tuile.neuve { outline: 2.5px solid var(--alerte); outline-offset: -2.5px; }
+.tuile > .avatar { position: absolute; left: 5px; top: 5px; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .4); }
+
+.carte-situer {
+  height: 240px; margin-top: 10px;
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--bordure);
+  /* Leaflet pose ses tuiles en absolu ; sans hauteur explicite le conteneur
+   * s'effondre à zéro et la carte est invisible sans la moindre erreur. */
+}
+/* Sur un écran haut, la carte peut respirer. */
+@media (min-height: 760px) { .carte-situer { height: 320px; } }
+
+/* Les intitulés des champs du panneau. Le même traitement que les filtres de
+ * galerie : petites capitales, discrètes, pour que le regard aille au contenu. */
+.titre-champ {
+  display: block; margin: 14px 0 4px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--texte-doux);
+}
+
+/* Les propositions de Nominatim. Bornées en hauteur et défilantes : une
+ * recherche large en rend huit, dont les noms font trois lignes chacun, et
+ * elles pousseraient la carte hors de l'écran. */
+.resultats-lieux {
+  max-height: 150px; overflow-y: auto; margin-top: 6px;
+  border: 1px solid var(--bordure); border-radius: 10px;
+}
+.resultats-lieux .ligne {
+  width: 100%; text-align: left; background: none; border: 0;
+  border-bottom: 1px solid var(--bordure); cursor: pointer;
+  font-size: 13px; padding: 9px 12px; color: var(--texte);
+}
+.resultats-lieux .ligne:last-child { border-bottom: 0; }
+.resultats-lieux .ligne:hover { background: var(--fond-2); }
+
+/* Un lien qui doit se lire comme un bouton. Le téléchargement d'une photo ne
+ * peut pas être un `<button>` : c'est l'attribut `download` d'une ancre qui
+ * fait le travail, et le navigateur ne l'accepte que là. */
+.bouton-lien {
+  display: inline-flex; align-items: center; justify-content: center;
+  text-decoration: none;
+}
+
+/* ══════════════════ navigation dans la visionneuse ══════════════════════ */
+
+.cadre-photo { position: relative; }
+
+/* Les flèches sont posées sur la photo, pas sous elle : le pouce y arrive sans
+ * lâcher l'image, et elles disparaissent aux extrémités plutôt que de rester
+ * grisées — un bouton inerte se tente quand même, et déçoit. */
+.cadre-photo .fleche {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 38px; height: 54px; padding: 0; border: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .42); color: #fff;
+  font-size: 28px; line-height: 1; cursor: pointer;
+  border-radius: 10px;
+}
+.cadre-photo .fleche.gauche { left: 6px; }
+.cadre-photo .fleche.droite { right: 6px; }
+.cadre-photo .fleche:hover { background: rgba(0, 0, 0, .62); }
+
+/* Où l'on en est dans la série. Sans ce repère, on ne sait pas s'il reste
+ * trois photos ou trois cents. */
+.cadre-photo .rang-photo {
+  position: absolute; right: 8px; bottom: 8px;
+  padding: 3px 8px; border-radius: 10px;
+  background: rgba(0, 0, 0, .5); color: #fff;
+  font-size: 11px; font-weight: 700;
+}
+
+/* ═══════════════════ fiche joueur : d'où viennent ses points ════════════ */
+
+.qualites { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 4px; }
+.rangee-qualite {
+  display: flex; align-items: center; gap: 8px; font-size: 12.5px;
+}
+/* Largeur fixe sur l'étiquette : sans elle, « légendaire » et « commun »
+ * décalent les barres l'une par rapport à l'autre, et on ne peut plus les
+ * comparer d'un coup d'oeil — ce qui est tout leur intérêt. */
+.rangee-qualite .etiquette {
+  flex: 0 0 86px; color: var(--c); font-weight: 700;
+}
+.rangee-qualite .piste {
+  flex: 1; height: 8px; border-radius: 6px;
+  background: var(--case-vide); overflow: hidden;
+}
+.rangee-qualite .piste i { display: block; height: 100%; border-radius: 6px; }
+.rangee-qualite .doux { flex: 0 0 auto; font-size: 11.5px; }
+
+/* Les plus belles prises : une rangée qui défile. Un mur pousserait le reste
+ * de la fiche hors de l'écran dès la cinquième. */
+.rangee-prises {
+  display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 8px;
+  scrollbar-width: none;
+}
+.rangee-prises::-webkit-scrollbar { display: none; }
+.prise {
+  flex: 0 0 96px; position: relative; padding: 0; border: 0; cursor: pointer;
+  background: none; text-align: center; color: var(--texte);
+}
+.prise img {
+  width: 96px; height: 96px; object-fit: cover;
+  border-radius: 12px; background: var(--case-vide); display: block;
+}
+.prise .nom {
+  display: block; font-size: 11px; font-weight: 600; margin-top: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.prise .doux { display: block; font-size: 10px; }
+.prise .gemme { position: absolute; top: 4px; right: 4px; }
+
+/* Le réglage d'image d'une case, en bas de sa fiche. Détaché du reste par une
+ * ligne : c'est un réglage, pas du contenu, et il ne doit pas se lire comme la
+ * suite des photos. */
+.reglage-case {
+  margin-top: 18px; padding-top: 14px;
+  border-top: 1px solid var(--bordure);
+}
+.reglage-case .puces { padding: 0; }
+.reglage-case .rangee-prises { padding-bottom: 2px; }
+.reglage-case .prise { flex: 0 0 72px; }
+.reglage-case .prise img { width: 72px; height: 72px; }
+
+/* ═══════════════════════ appui long sur une vignette ═══════════════════
+ *
+ * Safari iOS répond à un appui long sur une image par son propre menu —
+ * « Enregistrer l'image », « Copier » — et par une prévisualisation qui
+ * grossit sous le doigt. C'est le « callout » du système, et il se désactive.
+ * Sans ces trois lignes, le minuteur de `poseAppuiLong()` ne sert à rien : le
+ * navigateur a déjà pris la main avant lui.
+ *
+ * On ne le désactive que sur les vignettes sélectionnables. Ailleurs — dans un
+ * article, sur la photo en grand — enregistrer une image reste un geste
+ * légitime qu'on n'a aucune raison de confisquer.
+ */
+[data-appui-long] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Supprime l'attente de 300 ms que Safari garde pour guetter un double
+   * appui : sans ça, la sélection paraît molle. */
+  touch-action: manipulation;
+}
+[data-appui-long] img { -webkit-user-drag: none; pointer-events: none; }
+
+/* Sur une ligne d'espèce, l'appui long montre la fiche mais la liste doit
+ * continuer de défiler : `manipulation` interdit le double-appui pour zoomer,
+ * pas le glissement vertical. */
+[data-appui-role="apercu"] { touch-action: pan-y; }
+
+/* ══════════════════ la grille des succès, reprise ═══════════════════════
+ *
+ * Les intitulés « Faciles / Moyens / Difficiles » sont partis. Ils coupaient la
+ * grille en trois blocs et annonçaient le contenu avec la délicatesse d'un
+ * rayon de supermarché. L'ordre du serveur va toujours du facile au difficile :
+ * la grille descend en difficulté toute seule, sans qu'on l'écrive.
+ *
+ * Chaque tuile porte la couleur de sa propre gemme, celle du corps de la
+ * grenouille qu'elle enferme. Trente couleurs au lieu de trois, et surtout :
+ * en ouvrant le cristal on retrouve exactement celle qu'on regardait.
+ */
+/* La teinte est posée en ligne, par succès : c'est celle de sa gemme, tirée
+ * des pixels de sa grenouille. On retrouve sur la tuile la couleur qu'on verra
+ * en l'ouvrant — c'est ce qui relie les deux écrans sans une ligne de texte.
+ * Le repli sert le temps que la liste arrive du serveur. */
+.succes { --teinte-succes: #7fc7ff; }
+
+/* Verrouillée, la tuile est sourde : la teinte n'y est qu'à l'état de trace,
+ * juste assez pour annoncer ce qu'on gagnerait. */
+.succes {
+  border-color: color-mix(in srgb, var(--teinte-succes) 22%, var(--bordure));
+}
+
+/* Débloquée, la couleur revient franchement : un liseré tenu, un fond qui la
+ * reprend de très loin, et une lueur basse qui décolle la tuile du fond. */
+.succes.acquis {
+  border-color: var(--teinte-succes);
+  background:
+    radial-gradient(120% 80% at 50% 0%,
+      color-mix(in srgb, var(--teinte-succes) 16%, transparent), transparent 70%),
+    var(--fond-2);
+  color: var(--texte);
+  box-shadow: 0 2px 14px color-mix(in srgb, var(--teinte-succes) 18%, transparent);
+}
+
+/* Le sceau : le seul mot qu'on garde est un signe. En haut à droite, hors du
+ * chemin du regard, pour dire « celui-là est à toi » sans répéter la couleur. */
+.succes .sceau {
+  position: absolute; top: 6px; right: 7px;
+  width: 17px; height: 17px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--teinte-succes); color: #10131a;
+  font-size: 11px; font-weight: 900; line-height: 1;
+}
+
+/* La jauge d'avancement remplace le « 3/10 » qui doublait l'information en
+ * plus petit. Elle passe à la teinte du succès : c'est un aperçu de la couleur
+ * qu'on aura en le décrochant. */
+.succes .part {
+  display: block; width: 100%; height: 3px; border-radius: 3px;
+  background: var(--case-vide); overflow: hidden;
+}
+.succes .part i {
+  display: block; height: 100%; border-radius: 3px;
+  background: var(--teinte-succes);
+}
+
+/* Le bouton d'essai, discret : c'est un outil, pas une action de jeu. */
+.compte-succes .essai { margin-left: auto; font-size: 12px; }
+
+/* Sur une tablette ou un ordinateur, trois colonnes laissent des tuiles
+ * énormes et une page interminable. */
+@media (min-width: 620px) { .grille-succes { grid-template-columns: repeat(5, 1fr); } }
+@media (min-width: 900px) { .grille-succes { grid-template-columns: repeat(6, 1fr); } }
+
+/* ════════════════════ l'écran de rupture du cristal ════════════════════
+ *
+ * Plein écran, fond très sombre. La gemme doit être la seule chose à regarder :
+ * posée sur la page des succès, avec la grille qui transparaît derrière, elle
+ * n'aurait aucun poids.
+ */
+.rupture {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 18px;
+  background: rgba(6, 8, 12, .93);
+  animation: voile-apparait .22s ease-out both;
+}
+
+/* La scène est carrée et bornée : sur un téléphone elle prend presque toute la
+ * largeur, sur un écran large elle ne s'étire pas jusqu'à l'absurde. */
+.rupture .scene {
+  position: relative;
+  width: min(78vw, 78vh, 420px);
+  aspect-ratio: 1;
+}
+.rupture canvas.gemme-3d {
+  width: 100%; height: 100%; display: block;
+  cursor: pointer;
+  /* Retournée, et c'est voulu.
+   *
+   * Le shader est partagé avec l'application, où l'origine des pixels est en
+   * haut à gauche ; en WebGL elle est en bas à gauche. Le même calcul rend donc
+   * l'image miroir : la gemme éclairée par en dessous, la lueur du cœur qui
+   * monte au lieu de descendre. Plutôt que de bifurquer le shader — ce qui
+   * ferait deux versions à maintenir, exactement ce qu'on a voulu éviter — on
+   * remet l'image à l'endroit ici. La gemme est symétrique haut-bas, seule
+   * l'orientation de la lumière change, et elle redevient juste. */
+  transform: scaleY(-1);
+  /* Le doigt sert à casser la gemme, pas à faire défiler ni à zoomer. */
+  touch-action: none;
+  -webkit-touch-callout: none; user-select: none;
+}
+.rupture model-viewer {
+  width: 100%; height: 100%;
+  --poster-color: transparent;
+  animation: eclosion .5s var(--ressort) both;
+}
+
+/* Une ombre au sol. Sans elle l'objet flotte dans le vide, et le regard ne
+ * sait pas à quelle distance il se trouve. */
+.rupture .socle {
+  position: absolute; left: 12%; right: 12%; bottom: 4%;
+  height: 16px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, .55), transparent);
+  pointer-events: none;
+}
+
+.rupture .invite {
+  margin: 0; text-align: center; max-width: 78vw;
+  color: #e7eaf0; font-size: 13.5px;
+  display: flex; flex-direction: column; gap: 6px;
+  animation: respire 2.4s ease-in-out infinite;
+}
+.rupture .invite b { font-size: 19px; font-weight: 800; }
+.rupture .invite span { color: #a6adba; font-size: 13px; line-height: 1.45; }
+/* Une fois révélé, le texte ne doit plus pulser : il se lit. */
+.rupture.revele .invite { animation: eclosion .45s var(--ressort) .15s both; }
+
+@keyframes respire {
+  0%, 100% { opacity: .55; }
+  50%      { opacity: 1; }
+}
+
+.rupture .fermer-rupture {
+  position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 16px;
+  width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, .12); color: #fff;
+  font-size: 17px; cursor: pointer;
+}
+
+/* Pendant la fracture, l'écran tremble légèrement. Deux pixels : au-delà on
+ * pense à un défaut d'affichage, en dessous on ne le sent pas. */
+.rupture.brise .scene { animation: secousse .45s ease-out 1.15s; }
+@keyframes secousse {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, -2px); }
+  80% { transform: translate(1px, 2px); }
+}
+
+/* Le corps ne défile plus derrière l'écran plein : sur iOS, sans ça, la page
+ * glisse sous la gemme dès qu'on manque le canevas. */
+body.sans-defilement { overflow: hidden; }
+
+/* Personne ne doit se voir imposer un tremblement ni une pulsation. La gemme,
+ * elle, reste : c'est le contenu, pas une décoration. */
+@media (prefers-reduced-motion: reduce) {
+  .rupture .invite,
+  .rupture.brise .scene { animation: none; }
+  .rupture model-viewer { animation: voile-apparait .2s both; }
+}
+
+/* ══════════════ les cartes ne doivent pas passer devant ═══════════════
+ *
+ * Leaflet empile ses calques à des z-index élevés — 400 pour les tuiles, 600
+ * pour les marqueurs, 700 pour les popups. Tant que le conteneur de la carte ne
+ * crée pas de contexte d'empilement, ces valeurs se comparent directement à
+ * celles du reste de la page : la carte passait devant la visionneuse (30), qui
+ * s'ouvrait derrière elle. On voyait la photo à travers les tuiles, et les
+ * boutons étaient inatteignables.
+ *
+ * `isolation: isolate` crée le contexte sans rien déplacer ni changer de
+ * position. Les 400 et 700 de Leaflet redeviennent alors internes à la carte,
+ * et c'est le conteneur seul — z-index automatique, donc en flux normal — qui
+ * se compare aux panneaux.
+ */
+#carte, .carte-situer { isolation: isolate; }
+
+/* ═══════════════════ le lancer de sphère pendant l'analyse ═════════════ */
+
+/* Le canevas se superpose exactement à la photo : le cercle de visée doit se
+ * poser sur la bête, pas à côté. */
+.scene-capture { position: relative; }
+.scene-capture canvas {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;   /* on ne touche pas l'animation, on la regarde */
+}
+
+/* ═══════════════════════ le profil, version vitrine ════════════════════
+ *
+ * Un profil qui n'affiche qu'un pseudo et un compteur ne donne envie de rien.
+ * Il porte maintenant ce qu'on a choisi de montrer et ce qu'on a décroché —
+ * dans le fond, pas dans la forme : pas de bannière ni de cadre doré, juste ce
+ * qui appartient au joueur, rangé.
+ */
+.bloc-profil {
+  margin-top: 20px; padding-top: 14px;
+  border-top: 1px solid var(--bordure);
+  text-align: left;
+}
+.bloc-profil .titre { margin-left: 0; }
+
+/* La vitrine : deux colonnes sur téléphone, trois dès qu'il y a la place. Six
+ * photos alignées sur une rangée seraient des timbres. */
+.mur-vitrine {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 8px; margin: 8px 0 12px;
+}
+@media (min-width: 520px) { .mur-vitrine { grid-template-columns: repeat(3, 1fr); } }
+
+.piece-vitrine {
+  position: relative; padding: 0; border: 0; background: none;
+  cursor: pointer; color: var(--texte); text-align: left;
+}
+.piece-vitrine img {
+  width: 100%; aspect-ratio: 4 / 3; object-fit: cover;
+  border-radius: 12px; background: var(--case-vide); display: block;
+}
+.piece-vitrine .nom {
+  display: block; margin-top: 4px; font-size: 11.5px; font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.piece-vitrine .gemme { position: absolute; top: 6px; right: 6px; }
+
+/* Les succès d'un joueur, en petit. */
+.mur-succes-profil {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 8px; margin: 8px 0 6px;
+}
+@media (min-width: 520px) { .mur-succes-profil { grid-template-columns: repeat(6, 1fr); } }
+
+.succes-profil {
+  position: relative; padding: 6px 4px; border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--teinte-succes, var(--bordure)) 45%, var(--bordure));
+  background: var(--fond-2); color: var(--texte);
+  cursor: pointer; font: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.succes-profil .nom {
+  font-size: 9.5px; font-weight: 700; line-height: 1.15; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+}
+.succes-profil canvas { width: 100%; aspect-ratio: 1; }
+
+/* Un succès qu'on n'a pas soi-même : on dit qu'il est décroché, on ne montre
+ * pas quoi. Le point d'interrogation dit « il y a quelque chose ici » sans rien
+ * révéler — une silhouette de la vraie grenouille en dirait déjà trop. */
+.succes-profil.voile { cursor: default; opacity: .72; }
+.succes-profil .silhouette-inconnue {
+  width: 100%; aspect-ratio: 1; display: grid; place-items: center;
+  border-radius: 10px; background: var(--case-vide);
+  color: var(--silhouette); font-size: 20px; font-weight: 900;
+}
+
+/* Le numéro d'ordre dans le choix de vitrine : ce n'est pas une coche, c'est un
+ * rang — il dit dans quel ordre les photos apparaîtront. */
+.mur .tuile .coche { font-variant-numeric: tabular-nums; }
+
+/* ══════════════════════════ les confettis ═════════════════════════════ */
+
+/* Par-dessus tout, mais transparent aux gestes : on regarde la fête, on ne
+ * clique pas dedans, et l'écran en dessous reste utilisable. */
+.toile-fete {
+  position: fixed; inset: 0; z-index: 80;
+  pointer-events: none;
+}
+
+/* Le titre de la découverte. Il monte légèrement puis s'efface — un texte qui
+ * reste immobile pendant que tout tombe autour paraît collé. */
+.bandeau-fete {
+  position: fixed; z-index: 81; left: 50%; top: 38%;
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  pointer-events: none; text-align: center;
+  animation: fete-titre 2.6s var(--ressort) both;
+}
+.bandeau-fete b {
+  font-size: 30px; font-weight: 900; letter-spacing: -.02em;
+  color: #fff; text-shadow: 0 2px 14px rgba(0, 0, 0, .55);
+}
+.bandeau-fete span {
+  font-size: 14px; font-weight: 700; color: #fff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .6);
+}
+/* Le halo est réservé au sommet : s'il apparaissait sur un moineau, il ne
+ * dirait plus rien sur une espèce légendaire. */
+.bandeau-fete.halo::before {
+  content: ''; position: absolute; inset: -40px -70px;
+  border-radius: 50%; z-index: -1;
+  background: radial-gradient(closest-side,
+    rgba(232, 163, 23, .55), transparent);
+}
+.bandeau-fete.q4 b { color: #d7b6ff; }
+.bandeau-fete.q5 b { color: #ffd76a; }
+
+@keyframes fete-titre {
+  0%   { opacity: 0; transform: translate(-50%, -30%) scale(.85); }
+  12%  { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  78%  { opacity: 1; transform: translate(-50%, -56%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -64%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bandeau-fete { animation: voile-apparait .3s both; }
+}
+
+/* La liste des auteurs dans les filtres de galerie. Bornée en hauteur : à vingt
+ * amis, elle repousserait tout le reste du panneau hors de l'écran. */
+.liste-auteurs {
+  display: flex; flex-direction: column; gap: 2px;
+  max-height: 190px; overflow-y: auto;
+  border: 1px solid var(--bordure); border-radius: 10px; padding: 6px 8px;
+}
+.liste-auteurs .case-a-cocher { padding: 4px 0; }
+.liste-auteurs .case-a-cocher span { display: flex; align-items: center; gap: 6px; }
+.liste-auteurs .case-a-cocher i { font-size: 11px; font-style: normal; }
+
+/* ═══════════ ce que le tactile ne doit pas hériter du bureau ════════════
+ *
+ * **Le survol.** Un écran tactile n'a pas de curseur : le navigateur simule un
+ * survol au moment de l'appui, et le garde ensuite — un bouton touché reste
+ * éclairé jusqu'à ce qu'on touche ailleurs. On voit donc en permanence deux
+ * éléments actifs, celui qu'on regarde et le dernier qu'on a effleuré.
+ * `@media (hover: hover)` réserve ces règles aux appareils qui savent
+ * réellement survoler ; on ne perd rien sur ordinateur.
+ */
+@media (hover: none) {
+  button:hover, a:hover, .ligne:hover, .tuile:hover, .puce:hover,
+  .prise:hover, .succes:hover, .piece-vitrine:hover, .succes-profil:hover,
+  .resultats-lieux .ligne:hover, .cadre-photo .fleche:hover {
+    background-color: revert;
+    border-color: revert;
+    color: revert;
+    filter: none;
+  }
+}
+
+/* **Le menu du système.** Un appui long sur une icône, un bouton ou une
+ * image y ouvre « Copier / Enregistrer l'image » et fait apparaître la loupe
+ * de sélection. C'est juste dans un article, absurde sur une interface : rien
+ * ici ne se copie utilement, et le menu vole le geste qu'on voulait faire.
+ *
+ * On le coupe sur tout ce qui est commande, et **on le laisse sur le texte** :
+ * un nom latin, une condition de succès, une adresse de lieu se recopient
+ * légitimement. C'est pour ça que la règle vise les éléments interactifs et
+ * non `body`. */
+button, .puce, .tuile, .ligne, .prise, .succes, .succes-profil,
+.piece-vitrine, .case-dex, .pastille, .fleche, nav, header, .outil,
+.avatar, .modele, canvas, svg {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Les images d'interface — avatars, vignettes, silhouettes — ne se glissent
+ * pas et ne s'enregistrent pas. La photo en grand de la visionneuse, si :
+ * c'est là qu'on veut vraiment la récupérer. */
+.tuile img, .prise img, .piece-vitrine img, .avatar, .succes canvas,
+.ligne img, .apercu-espece img {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
+
+/* Un avatar qui mène quelque part doit le dire : le curseur sur ordinateur, un
+ * léger enfoncement au doigt. */
+.avatar-lien { cursor: pointer; transition: transform .1s ease-out; }
+.avatar-lien:active { transform: scale(.92); }
+
+/* La liste des trouvailles d'un joueur : bornée et défilante dans la fiche,
+ * qui défile elle-même. Sans la borne, trois cents espèces feraient une fiche
+ * interminable où la vitrine et les succès seraient hors d'atteinte. */
+.liste-trouvailles {
+  max-height: 320px; overflow-y: auto;
+  border: 1px solid var(--bordure); border-radius: 12px;
+  margin-bottom: 10px;
+}
+.liste-trouvailles .ligne {
+  width: 100%; background: none; border: 0; text-align: left;
+  border-bottom: 1px solid var(--bordure); cursor: pointer; color: var(--texte);
+}
+.liste-trouvailles .ligne:last-child { border-bottom: 0; }
+.liste-trouvailles .silhouette { width: 28px; height: 28px; flex: 0 0 auto; }
+.liste-trouvailles .rond {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--case-vide); flex: 0 0 auto;
+}
+
+/* ═══════ pourquoi les vignettes grossissaient jusqu'à occuper la page ═══
+ *
+ * Une colonne de grille déclarée `1fr` vaut en réalité `minmax(auto, 1fr)` :
+ * son minimum est le contenu minimal de l'élément. Or un canevas a une largeur
+ * *intrinsèque* — celle de son attribut `width` — et le dessin la recalcule à
+ * chaque trame depuis la largeur affichée. La boucle est bouclée : le canevas
+ * élargit sa colonne, la colonne élargit le canevas, et en une seconde une
+ * grenouille de deux mille pixels traverse l'écran.
+ *
+ * `width: 100%` n'y change rien : c'est la piste elle-même qui grandit.
+ * `min-width: 0` casse la boucle en disant que l'élément a le droit d'être plus
+ * étroit que son contenu — la règle qu'on écrit d'ordinaire pour empêcher un
+ * texte long de faire déborder une grille, et qui sert ici exactement pareil.
+ *
+ * Le plafond de `ajuste()` dans media.js est la seconde barrière, pour le jour
+ * où une grille naîtra sans cette règle.
+ */
+.grille-succes > *,
+.mur-succes-profil > *,
+.mur > *,
+.mur-vitrine > *,
+.grille-dex > *,
+.grille-rangs > *,
+.badges > * { min-width: 0; }
+
+/* Et le canevas lui-même ne pousse jamais son conteneur.
+ *
+ * `min-height: 0` est la pièce qui manquait, et c'est la moins évidente.
+ *
+ * Les tuiles de succès sont des colonnes flex. Sur un élément flex, la valeur
+ * initiale de `min-height` est `auto`, ce qui vaut **la hauteur intrinsèque du
+ * contenu** — pour un canevas, son attribut `height`, soit 320 px après
+ * plafonnement, et près de deux mille avant. L'élément ne pouvait donc jamais
+ * rétrécir en dessous : la vignette restait haute de trois cents pixels dans
+ * une tuile de quatre-vingts, et occupait tout l'écran en hauteur.
+ *
+ * `width: 100%` n'y changeait rien, `max-width` non plus : ni l'un ni l'autre
+ * ne parle de hauteur. C'est aussi pourquoi plafonner la résolution n'a fait
+ * que réduire le débordement sans le supprimer.
+ *
+ * `height: auto` laisse le rapport d'aspect décider, `min-height: 0` autorise
+ * la réduction, et `min-width: 0` fait la même chose sur l'autre axe pour les
+ * colonnes flex — celui des grilles est déjà couvert plus haut. */
+.modele {
+  max-width: 100%;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+
+/* ══════════════ le thème choisi l'emporte sur celui du système ═════════
+ *
+ * `prefers-color-scheme` dit ce que la personne a réglé sur son appareil, et
+ * c'est le bon défaut. Mais il faut pouvoir le contredire ici — pour lire dehors
+ * en plein soleil, ou pour garder l'écran sombre en journée. `data-theme` est
+ * posé sur la racine par `appliqueTheme()` ; sans choix explicite, l'attribut
+ * est absent et le système reprend la main.
+ *
+ * Les deux sens sont nécessaires : forcer le sombre sur un appareil clair, et
+ * forcer le clair sur un appareil sombre — ce second cas demande de réécrire la
+ * palette claire, que le bloc `prefers-color-scheme` aurait sinon remplacée.
+ */
+:root[data-theme="dark"] {
+    --fond: #121316;
+    --fond-2: #1b1d22;
+    --case-vide: #23262c;
+    --silhouette: #3a3e46;
+    --bordure: #35383f;
+    --texte: #eceef2;
+    --texte-doux: #9aa0ab;
+    /* L'accent est éclairci : à luminosité égale, une couleur saturée paraît
+     * plus sombre sur fond noir que sur fond blanc. */
+    --accent: #2fc3c1;
+    --accent-sombre: #1d8f8e;
+    --alerte: #ff6b6b;
+  }
+
+:root[data-theme="light"] {
+  --fond: #ffffff;
+  --fond-2: #f6f7f8;
+  --case-vide: #f1f1f2;
+  --silhouette: #d2d3d6;
+  --bordure: #b9babd;
+  --texte: #1b1d21;
+  --texte-doux: #6b7079;
+  --accent: #0ea5a4;
+  --accent-sombre: #0b7f7e;
+  --alerte: #e05252;
+}
+:root[data-theme="dark"] .feuille img, :root[data-theme="dark"] .modale img {
+  filter: brightness(.92);
+}
+:root[data-theme="dark"] .tuile .voile {
+  background: linear-gradient(transparent, rgba(0, 0, 0, .72));
+}
+:root[data-theme="dark"] nav { border-top: 1px solid var(--bordure); }
+
+/* ═══════════ couper les animations sans les retirer une par une ════════
+ *
+ * Une seule classe sur la racine, et rien à tenir à jour le jour où on ajoute
+ * une animation. On garde une durée minuscule plutôt que `none` : à zéro,
+ * certains navigateurs ne déclenchent jamais `animationend`, et le code qui
+ * attend la fin d'une animation resterait suspendu. */
+.sans-animation *,
+.sans-animation *::before,
+.sans-animation *::after {
+  animation-duration: .01ms !important;
+  animation-delay: 0s !important;
+  transition-duration: .01ms !important;
+}
+
+/* Les réglages : une ligne, son explication, son interrupteur. */
+.ligne-reglage {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--bordure);
+  cursor: pointer;
+}
+.ligne-reglage:last-of-type { border-bottom: 0; }
+.ligne-reglage .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ligne-reglage .texte b { font-size: 14px; }
+.ligne-reglage .texte .doux { font-size: 12px; line-height: 1.35; }
+.ligne-reglage input {
+  flex: 0 0 auto; width: 20px; height: 20px; accent-color: var(--accent);
+}
+
+/* ═══════════════════════════ l'écran d'accueil ═════════════════════════
+ *
+ * C'est la première chose qu'on voit. Il ne montrait rien du jeu : deux champs
+ * sur du blanc. Il porte maintenant la mascotte — un modèle qu'on a déjà, donc
+ * aucun fichier de plus à télécharger — sur un fond qui rappelle la nature sans
+ * tomber dans l'illustration de banque d'images.
+ */
+.accueil {
+  position: relative; min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+
+/* Deux halos très diffus, dans les couleurs de l'accent et du vert des plantes.
+ * Posés en dégradés radiaux plutôt qu'en image : c'est trois lignes, ça pèse
+ * zéro octet et ça suit le thème. */
+.ciel {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 40% at 15% 8%,
+      color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    radial-gradient(55% 38% at 90% 22%,
+      color-mix(in srgb, #22a34b 18%, transparent), transparent 70%),
+    var(--fond);
+}
+
+.accueil-dedans {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 360px; text-align: center;
+}
+
+.mascotte {
+  width: 132px; height: 132px; margin: 0 auto 6px;
+  /* Une ombre portée douce : sans elle la grenouille flotte sur le halo. */
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .18));
+}
+
+.accueil h1 {
+  margin: 0; font-size: 34px; font-weight: 900; letter-spacing: -.02em;
+}
+.accroche {
+  margin: 6px 0 22px; font-size: 14px; line-height: 1.45;
+  color: var(--texte-doux);
+}
+
+/* La carte des champs se détache du halo : posés dessus, les champs se
+ * confondaient avec le fond. */
+.carte-connexion {
+  background: var(--fond); border: 1px solid var(--bordure);
+  border-radius: 20px; padding: 16px 16px 18px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, .10);
+  text-align: left;
+}
+.carte-connexion .segments { margin-bottom: 14px; }
+.carte-connexion .principal { width: 100%; margin-top: 14px; }
+.carte-connexion .erreur { margin-top: 10px; }
+
+/* L'absence de récupération de mot de passe se dit à l'inscription, pas le jour
+ * où on l'oublie. */
+.avertissement-compte {
+  margin: 12px 0 0; font-size: 11.5px; line-height: 1.45;
+}
+
+.pied-accueil {
+  margin: 18px 0 0; font-size: 11.5px; line-height: 1.45;
+}
+
+/* ═══════════════════════════ le profil rangé ═══════════════════════════
+ *
+ * L'écran empilait sept boutons nus, un réglage d'affichage, une clé
+ * d'interface externe, une bio et un mot de passe. Des choses de natures
+ * différentes à la file, et rien pour dire laquelle on cherchait.
+ *
+ * Il ne reste que ce qui appartient au joueur : son identité, sa progression,
+ * et les portes vers ses affaires. Tout ce qui se règle est parti dans
+ * « Réglages » — un seul endroit où chercher quand on veut changer quelque
+ * chose, ce qui est la moitié du travail d'un menu.
+ */
+.carte-identite {
+  text-align: center; padding: 8px 0 18px;
+}
+.carte-identite h2 { margin: 10px 0 2px; font-size: 22px; font-weight: 800; }
+.carte-identite .bio {
+  margin: 4px 0 0; font-size: 13px; color: var(--texte-doux); line-height: 1.4;
+}
+
+/* La photo se change en la touchant : le crayon le dit, aucun libellé ne le
+ * dirait mieux. */
+.change-avatar { position: relative; display: inline-block; cursor: pointer; }
+.change-avatar .stylo {
+  position: absolute; right: -2px; bottom: -2px;
+  width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--accent); color: #fff; font-size: 14px;
+  border: 2px solid var(--fond);
+}
+
+/* Trois chiffres alignés, séparés d'un filet. Une phrase « 25 espèces · 30
+ * photos · 630 points » se lit mot à mot ; trois colonnes se lisent d'un coup. */
+.chiffres {
+  display: flex; margin: 16px 0 0;
+  border: 1px solid var(--bordure); border-radius: 14px; overflow: hidden;
+}
+.chiffres span {
+  flex: 1; min-width: 0; padding: 10px 4px;
+  display: flex; flex-direction: column; gap: 1px;
+  font-size: 11px; color: var(--texte-doux);
+  border-right: 1px solid var(--bordure);
+}
+.chiffres span:last-child { border-right: 0; }
+.chiffres b { font-size: 18px; font-weight: 800; color: var(--texte); }
+
+.progression {
+  margin-top: 12px; padding: 10px 12px; cursor: pointer;
+  border: 1px solid var(--bordure); border-radius: 14px;
+  text-align: left; display: flex; flex-direction: column; gap: 5px;
+}
+.ligne-progression {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 13.5px;
+}
+.progression .piste {
+  display: block; height: 6px; border-radius: 4px;
+  background: var(--case-vide); overflow: hidden;
+}
+.progression .piste i {
+  display: block; height: 100%; border-radius: 4px; background: var(--accent);
+}
+.progression .doux { font-size: 11.5px; }
+
+/* ── le menu ──────────────────────────────────────────────────────────────
+ *
+ * Une entrée dit où elle mène **et ce qu'on y trouve**. « Classement » seul
+ * oblige à ouvrir pour savoir ; « Classement — mon cercle d'amis » évite le
+ * détour. C'est deux lignes de plus et un aller-retour de moins. */
+.menu-range {
+  border: 1px solid var(--bordure); border-radius: 16px;
+  overflow: hidden; margin-bottom: 6px;
+}
+.entree-menu {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border: 0; background: none; cursor: pointer;
+  border-bottom: 1px solid var(--bordure);
+  color: var(--texte); text-align: left; font: inherit;
+  /* 44 px est le minimum tenable pour un doigt ; on est au-dessus. */
+  min-height: 52px;
+}
+.entree-menu:last-child { border-bottom: 0; }
+.entree-menu:active { background: var(--fond-2); }
+.entree-menu .emoji { font-size: 19px; flex: 0 0 24px; text-align: center; }
+.entree-menu .texte {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;
+}
+.entree-menu .texte b { font-size: 14.5px; font-weight: 600; }
+.entree-menu .texte .doux { font-size: 12px; }
+.entree-menu .chevron { flex: 0 0 auto; color: var(--texte-doux); }
+
+/* Deux actions côte à côte plutôt qu'empilées : « Enregistrer » et « Retirer »
+ * se répondent, les séparer sur deux lignes suggère qu'elles n'ont rien à voir. */
+.ligne-actions { display: flex; gap: 8px; margin-top: 8px; }
+.ligne-actions button { flex: 1; }
+
+/* ═════════════════ le dex arrangé — comme un bureau ════════════════════
+ *
+ * La grille libre reprend **exactement** la géométrie de `.grille-dex` : cinq
+ * colonnes, les mêmes gouttières, la même largeur. Une cellule vaut donc une
+ * vignette d'origine, et un dex jamais rangé est identique à ce qu'il était.
+ *
+ * Les cases sont posées en absolu, à partir de quatre variables (`--c --r --l
+ * --h`) que le JavaScript écrit et que ces règles traduisent en pixels. C'est
+ * ce qui rend le déplacement fluide : bouger une vignette, c'est changer deux
+ * nombres, et la transition fait glisser la case jusqu'à sa nouvelle place.
+ *
+ * Les constantes — 8 px de gouttière, 10 px entre les rangées, 30 px pour le
+ * nom — sont recopiées dans `disposition.js` : le code y retrouve la cellule
+ * sous le doigt par la même arithmétique. Changer l'une sans l'autre décale
+ * la visée d'autant. */
+.grille-libre {
+  --gouttiere: 8px;
+  --espace: 10px;
+  --nom: 30px;
+  /* La largeur de la grille est bornée et connue, et c'est indispensable : les
+   * rangées se déduisent de la largeur d'une colonne, les deux doivent venir
+   * du même nombre. 588 px est la largeur de lecture du reste du site. */
+  --large-grille: min(calc(100vw - 32px), 588px);
+  --cellule: calc((var(--large-grille) - (var(--colonnes, 5) - 1)
+                   * var(--gouttiere)) / var(--colonnes, 5));
+  --rangee: calc(var(--cellule) + var(--nom));
+  position: relative;
+  width: var(--large-grille);
+  margin: 0 auto;
+  height: calc(var(--rangs, 1) * (var(--rangee) + var(--espace)) + 14px);
+}
+.grille-libre > .case-dex,
+.grille-libre > .case-vide {
+  position: absolute;
+  left: calc(var(--c, 0) * (var(--cellule) + var(--gouttiere)));
+  top: calc(var(--r, 0) * (var(--rangee) + var(--espace)));
+  width: calc(var(--l, 1) * var(--cellule) + (var(--l, 1) - 1) * var(--gouttiere));
+  height: calc(var(--h, 1) * var(--rangee) + (var(--h, 1) - 1) * var(--espace));
+  transition: left .22s var(--ressort), top .22s var(--ressort),
+              width .22s var(--ressort), height .22s var(--ressort),
+              opacity .15s;
+}
+.case-dex.libre { display: flex; flex-direction: column; }
+/* La vignette prend toute la hauteur qui reste au-dessus du nom. Carrée dans
+ * une case 1×1, allongée dans une 2×1 : forcer le carré faisait déborder la
+ * vignette d'une case large sur la rangée du dessous. */
+.case-dex.libre .vignette {
+  flex: 1 1 auto; min-height: 0; width: 100%; aspect-ratio: auto;
+}
+.case-dex.libre .nom { flex: 0 0 auto; }
+
+/* ── les formes ──────────────────────────────────────────────────────────
+ *
+ * Le découpage porte sur la vignette, pas sur la case : le nom doit rester
+ * lisible sous une goutte comme sous un carré. Aucune règle sur une case sans
+ * forme : elle garde exactement le rendu d'origine. */
+.case-dex .vignette { transition: clip-path .18s var(--ressort), border-radius .18s; }
+.f-arrondi  .vignette { border-radius: 16px; }
+.f-carre    .vignette { border-radius: 3px; }
+.f-rond     .vignette { border-radius: 50%; }
+.f-goutte   .vignette { border-radius: 50% 50% 50% 6px; }
+.f-hexagone .vignette {
+  border-radius: 0;
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+}
+.f-losange  .vignette {
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* ── le mode arrangement ─────────────────────────────────────────────────*/
+
+.grille-libre.arrange {
+  /* Le défilement reste au navigateur tant qu'on ne tient rien ; dès que la
+   * vignette est soulevée, `disposition.js` le reprend par `touchmove`. */
+  touch-action: pan-y;
+  user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  /* Un point à chaque coin de cellule, dans les gouttières : la grille se
+   * devine sans passer devant les vignettes. */
+  background-image: radial-gradient(circle, var(--bordure) 1.3px, transparent 1.6px);
+  background-size: calc(var(--cellule) + var(--gouttiere)) calc(var(--rangee) + var(--espace));
+  background-position: calc(var(--gouttiere) / -2) calc(var(--espace) / -2);
+  border-radius: 10px;
+}
+.grille-libre.arrange .case-dex,
+.grille-libre.arrange .case-vide { cursor: grab; }
+.grille-libre.arrange img { pointer-events: none; -webkit-user-drag: none; }
+/* Un frémissement léger, comme les icônes d'un téléphone qu'on réorganise : il
+ * dit « on peut me bouger » sans un mot. Déphasé une case sur deux, sinon tout
+ * oscille d'un bloc et on croit que l'écran tremble. */
+.grille-libre.arrange .case-dex { animation: fremis 2.2s ease-in-out infinite; }
+.grille-libre.arrange .case-dex:nth-child(2n) { animation-delay: -1.1s; }
+.grille-libre.arrange .case-dex:nth-child(3n) { animation-duration: 2.6s; }
+@keyframes fremis {
+  0%, 100% { rotate: -.6deg; }
+  50%      { rotate: .6deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grille-libre.arrange .case-dex { animation: none; }
+}
+.grille-libre.arrange .active {
+  animation: none;
+  outline: 2.5px solid var(--accent); outline-offset: 3px;
+  border-radius: 14px;
+  z-index: 2;
+}
+/* L'originale reste en place, en creux, pendant qu'on tient sa copie : elle
+ * glisse vers la case visée et dit où la vignette va tomber. */
+.grille-libre .deplacee {
+  opacity: .28 !important; animation: none !important;
+  outline: 2px dashed var(--accent); outline-offset: 2px; border-radius: 14px;
+  z-index: 1;
+}
+.grille-libre .deplacee .vignette { filter: saturate(.3); }
+
+/* La copie qui suit le doigt. Elle part exactement de la vignette — mêmes
+ * pixels, même taille — et on la pousse par `transform` : c'est le seul
+ * mouvement que le navigateur compose sans relayout. */
+.fantome {
+  position: fixed; z-index: 60; pointer-events: none; margin: 0;
+  will-change: transform; animation: none !important; transition: none;
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .35));
+  opacity: .96;
+}
+.fantome.pose { transition: transform .17s var(--ressort), opacity .17s; opacity: 0; }
+body.glisse, body.glisse * { cursor: grabbing !important; }
+body.retaille, body.retaille * { cursor: nwse-resize !important; }
+
+/* La poignée de retaille, sur la vignette réglée : on la tire, la case grandit
+ * d'une cellule à la fois. */
+.poignee-taille {
+  position: absolute; right: -10px; bottom: -10px; z-index: 3;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent); border: 3px solid var(--fond);
+  box-shadow: 0 1px 5px rgba(0, 0, 0, .3);
+  cursor: nwse-resize; touch-action: none;
+  display: grid; place-items: center;
+}
+.poignee-taille::before {
+  content: ''; width: 8px; height: 8px; margin: -3px 0 0 -3px;
+  border-right: 2.5px solid #fff; border-bottom: 2.5px solid #fff;
+}
+
+/* Une case masquée disparaît du dex, mais reste visible en transparence
+ * pendant qu'on range — sinon on ne pourrait plus la démasquer. */
+.grille-libre .case-dex.masquee { opacity: .3; }
+.grille-libre .case-dex.masquee .vignette {
+  filter: grayscale(1);
+  outline: 1px dashed var(--bordure);
+}
+
+/* Les cases vides : rien du tout hors arrangement, un cadre pointillé dedans. */
+.case-vide {
+  border: 1.5px dashed var(--bordure); border-radius: 14px;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--texte-doux) 6%, transparent);
+}
+.case-vide.invisible { border: 0; background: none; pointer-events: none; }
+.marque-vide {
+  font-size: 10px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--texte-doux);
+}
+
+/* ── le titre avec un bouton à droite ────────────────────────────────────*/
+.titre-section .col { display: flex; flex-direction: column; min-width: 0; }
+.titre-section.avec-action {
+  flex-direction: row; align-items: center; justify-content: space-between;
+  gap: 10px; padding-right: 12px;
+}
+.titre-section.avec-action .lien { flex: 0 0 auto; padding: 6px 10px; }
+
+/* ── la barre ────────────────────────────────────────────────────────────
+ *
+ * Collée en haut pendant qu'on range : « Enregistrer » doit rester sous la main
+ * quand la grille fait dix écrans. Légèrement translucide pour qu'on voie la
+ * grille passer dessous, et savoir qu'on est toujours dedans. */
+.barre-arrangement {
+  position: sticky; top: 0; z-index: 12;
+  margin: 0 0 10px; padding: 10px 16px 10px;
+  background: color-mix(in srgb, var(--fond) 94%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--bordure);
+}
+.ligne-arrangement { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ligne-arrangement .texte { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ligne-arrangement b { font-size: 15px; display: flex; align-items: center; gap: 6px; }
+.ligne-arrangement .doux { font-size: 11.5px; line-height: 1.3; }
+.point-sale {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--alerte);
+}
+.ligne-arrangement .principal {
+  width: auto; flex: 0 0 auto; margin: 0; padding: 9px 14px; font-size: 13.5px;
+}
+.outils-arrangement { display: flex; gap: 6px; }
+.outil-rangement {
+  flex: 1 1 0; min-width: 0; padding: 5px 4px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  border: 1px solid var(--bordure); border-radius: 12px;
+  background: var(--fond-2); color: var(--texte); cursor: pointer;
+  line-height: 1.15;
+}
+.outil-rangement > span { font-size: 17px; }
+.outil-rangement small { font-size: 10px; font-weight: 600; color: var(--texte-doux); white-space: nowrap; }
+.outil-rangement:disabled { opacity: .4; cursor: default; }
+.outil-rangement:not(:disabled):active { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+
+/* ── le panneau de réglage ────────────────────────────────────────────────
+ *
+ * Il se pose au-dessus de la barre du bas, pas au milieu : la vignette qu'on
+ * règle doit rester visible pendant qu'on la règle. Chaque réglage montre ce
+ * qu'il produit plutôt que de le nommer. */
+.panneau-vignette {
+  position: fixed; z-index: 25;
+  left: 8px; right: 8px; max-width: 588px; margin: 0 auto;
+  bottom: calc(var(--barre) + 8px + env(safe-area-inset-bottom));
+  max-height: 50dvh; overflow-y: auto;
+  padding: 12px 14px 14px;
+  background: var(--fond); border: 1px solid var(--bordure);
+  border-radius: 18px; box-shadow: 0 -6px 28px rgba(0, 0, 0, .16);
+  animation: monte .2s var(--ressort);
+}
+.panneau-vignette .tete {
+  display: flex; align-items: center; gap: 10px;
+  padding-bottom: 10px; margin-bottom: 2px;
+  border-bottom: 1px solid var(--bordure);
+}
+.panneau-vignette .tete .texte {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;
+}
+.panneau-vignette .tete b { font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.panneau-vignette .tete .doux { font-size: 11.5px; }
+.apercu-reglee {
+  flex: 0 0 auto; width: 42px; height: 42px; border-radius: 12px;
+  overflow: hidden; background: var(--case-vide);
+  display: grid; place-items: center;
+}
+.apercu-reglee img { width: 100%; height: 100%; object-fit: contain; }
+.apercu-reglee.vide { border: 1.5px dashed var(--bordure); background: none; }
+.apercu-reglee.f-rond { border-radius: 50%; }
+.apercu-reglee.f-carre { border-radius: 3px; }
+.apercu-reglee.f-goutte { border-radius: 50% 50% 50% 4px; }
+.apercu-reglee.f-hexagone { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); border-radius: 0; }
+.apercu-reglee.f-losange { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); border-radius: 0; }
+
+.rangee-reglage { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; }
+.rangee-reglage .etiquette {
+  flex: 0 0 44px; padding-top: 12px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--texte-doux);
+}
+.gabarits { display: flex; flex-wrap: wrap; gap: 5px; }
+.gabarits button {
+  width: 38px; height: 38px; padding: 0;
+  display: grid; place-items: center;
+  border: 1px solid var(--bordure); border-radius: 9px;
+  background: var(--fond); cursor: pointer;
+}
+.gabarits button > span { background: var(--texte-doux); border-radius: 2px; }
+.gabarits button.actif { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.gabarits button.actif > span { background: var(--accent); }
+.apercu-forme {
+  width: 14px; height: 14px; background: currentColor; display: inline-block;
+  color: var(--texte-doux);
+}
+.gabarits.formes button.actif .apercu-forme { color: var(--accent); }
+.apercu-forme.f-arrondi  { border-radius: 4px; }
+.apercu-forme.f-carre    { border-radius: 1px; }
+.apercu-forme.f-rond     { border-radius: 50%; }
+.apercu-forme.f-goutte   { border-radius: 50% 50% 50% 2px; }
+.apercu-forme.f-hexagone { clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); }
+.apercu-forme.f-losange  { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+/* « D'origine » : un carré hachuré, pour dire qu'aucune forme n'est imposée. */
+.apercu-forme.f-defaut {
+  border-radius: 4px;
+  background: repeating-linear-gradient(45deg, currentColor 0 2px, transparent 2px 4px) !important;
+}
+.panneau-vignette .ligne-actions { margin-top: 12px; }
+.panneau-vignette .ligne-actions button { flex: 0 1 auto; }
+.astuce { font-size: 11.5px; margin: 8px 0 0; line-height: 1.35; }
+
+/* Un bouton qui doit se lire comme un lien.
+ *
+ * La classe était déjà posée à cinq endroits sans qu'aucune règle ne la
+ * définisse : les boutons sortaient en gris du navigateur, au milieu de textes
+ * où on attendait un lien. C'est ici que ça se répare, une fois pour les cinq,
+ * plutôt qu'un style en ligne à chaque appel. */
+.lien {
+  background: none; border: 0; padding: 4px 2px;
+  color: var(--accent); font: inherit; font-size: 13.5px; font-weight: 600;
+  cursor: pointer;
+}
+.lien:active { opacity: .6; }
+
+/* Un titre et son action sur la même ligne. */
+.rangee-titre {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+}
+.rangee-titre .titre { flex: 1; }
+
+/* Le tri des photos sans espèce.
+ *
+ * La coche prend la place de la chevronne « › », que le mode tri retire : les
+ * lignes gardent ainsi la même largeur d'un mode à l'autre, sans le sursaut
+ * qu'aurait donné une colonne apparaissant d'un côté sans disparaître de
+ * l'autre.
+ *
+ * Volontairement pas `.prise` : cette classe existe déjà ailleurs en
+ * `flex: 0 0 96px`, et l'appliquer ici écraserait la ligne à 96 pixels. */
+.tri-attente .coche {
+  width: 18px; flex: 0 0 18px; text-align: center;
+  color: var(--accent); font-size: 15px;
+}
+.tri-attente .ligne.cochee {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.tri-attente .barre-selection { margin-bottom: 8px; }
+
+/* ───────────── parité avec l'application : amis, classement, profil ──────── */
+
+/* Mon rang en tête du classement : la première chose qu'on vient y chercher. */
+.classement-moi {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  margin: 0 16px 10px; padding: 10px 14px; border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.classement-moi b { font-size: 17px; }
+.classement-moi sup { font-size: 10px; }
+
+/* Progression par groupe sur le profil : une jauge par classe entamée. */
+.groupes-profil { margin: 6px 16px 14px; }
+.ligne-groupe {
+  display: grid; grid-template-columns: 1fr 2fr auto; align-items: center;
+  gap: 10px; padding: 5px 0; font-size: 13px;
+}
+.ligne-groupe .nom { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ligne-groupe .jauge { height: 6px; border-radius: 3px; background: var(--case-vide); overflow: hidden; }
+.ligne-groupe .jauge i { display: block; height: 100%; background: var(--accent); }
+
+.regroupe { font-size: 12.5px; line-height: 1.45; }
+
+/* La relâche se dessine par-dessus la photo, exactement à sa taille. */
+canvas.relache { position: absolute; z-index: 3; pointer-events: none; }
+.analyse { position: relative; }
+
+/* ═══════════════════════════════ thème hacker ══════════════════════════
+ *
+ * Noir, vert, monospace, et la pluie de signes de `matrice.js` derrière la
+ * page. Le canevas est fixe, sous tout le reste : le corps de page devient
+ * transparent pour le laisser voir, mais chaque surface — en-tête, barre,
+ * feuilles, cases — garde son fond opaque, et rien ne se lit à travers la
+ * pluie. */
+:root[data-theme="hacker"] {
+  --fond: #050905;
+  --fond-2: #0b140c;
+  --case-vide: #0e1a0f;
+  --silhouette: #1f4a24;
+  --bordure: #1d5a26;
+  --texte: #9dffb0;
+  --texte-doux: #4fcf6a;
+  --accent: #22ff5e;
+  --accent-sombre: #12b542;
+  --alerte: #ff5c5c;
+  --q1: #6fa47a; --q2: #37e05a; --q3: #35c6ff; --q4: #c06bff; --q5: #ffd43b;
+  color-scheme: dark;
+}
+:root[data-theme="hacker"] { background: #000; }
+/* Un fond animé tourne (`data-fond` est posé par fond.js) : le corps devient
+   transparent pour le laisser voir, et l'application passe au-dessus. Chaque
+   surface — en-tête, barre, feuilles, cases — garde son fond opaque. */
+:root[data-fond] body { background: transparent; }
+:root[data-fond] #app { position: relative; z-index: 1; }
+#fond-anime {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  width: 100%; height: 100%; display: block;
+}
+/* La pluie est atténuée : c'est un décor, le texte par-dessus doit se lire. */
+:root[data-fond="matrice"] #fond-anime { opacity: .55; }
+:root[data-theme="hacker"] body,
+:root[data-theme="hacker"] button, :root[data-theme="hacker"] input,
+:root[data-theme="hacker"] select, :root[data-theme="hacker"] textarea {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+}
+:root[data-theme="hacker"] h1, :root[data-theme="hacker"] h2,
+:root[data-theme="hacker"] h3, :root[data-theme="hacker"] .titre-section b {
+  text-shadow: 0 0 8px rgba(34, 255, 94, .45);
+}
+:root[data-theme="hacker"] .puce.actif,
+:root[data-theme="hacker"] button.principal {
+  box-shadow: 0 0 10px rgba(34, 255, 94, .35);
+}
+:root[data-theme="hacker"] button.principal { color: #021; }
+:root[data-theme="hacker"] .feuille img, :root[data-theme="hacker"] .modale img { filter: brightness(.9); }
+:root[data-theme="hacker"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .78)); }
+:root[data-theme="hacker"] nav { border-top: 1px solid var(--bordure); }
+/* Les cases du dex et les tuiles gardent un fond plein : la pluie ne doit pas
+   se lire à travers une silhouette grise. */
+:root[data-theme="hacker"] .case-dex .vignette { background: var(--case-vide); }
+:root[data-theme="hacker"] .avatar.vide-av { background: var(--fond-2); color: var(--accent); }
+
+/* ═══════════════════════════ le choix du thème ═════════════════════════
+ *
+ * Des cartes avec un aperçu en vraies couleurs, et non des puces : un nom
+ * comme « Abysses » ne dit rien, trois cases et un point d'accent disent tout.
+ * Les couleurs de l'aperçu arrivent en variables `--ap-*` depuis `THEMES`. */
+.choix-themes {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px; margin-top: 6px;
+}
+.carte-theme {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 8px; border-radius: 14px; text-align: left; cursor: pointer;
+  border: 1.5px solid var(--bordure); background: var(--fond-2); color: var(--texte);
+  font: inherit;
+}
+.carte-theme.actif { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.carte-theme b { font-size: 13.5px; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+.carte-theme .coche { color: var(--accent); font-size: 12px; }
+.carte-theme .doux { font-size: 11px; }
+.carte-theme .apercu {
+  position: relative; display: block; width: 100%; height: 64px;
+  border-radius: 9px; overflow: hidden;
+  background: var(--ap-fond); border: 1px solid color-mix(in srgb, var(--ap-texte) 18%, transparent);
+}
+/* « Système » montre les deux moitiés : clair à gauche, sombre à droite. */
+.carte-theme .apercu.moitie { background: linear-gradient(90deg, #ffffff 50%, #121316 50%); }
+.carte-theme .apercu.moitie .case:nth-child(4) { background: #23262c; }
+.carte-theme .apercu.moitie .ligne { background: linear-gradient(90deg, #1b1d21 50%, #eceef2 50%); }
+.carte-theme .apercu i { position: absolute; display: block; border-radius: 3px; }
+.carte-theme .apercu .entete { left: 0; right: 0; top: 0; height: 12px; border-radius: 0; background: var(--ap-fond2); border-bottom: 1px solid color-mix(in srgb, var(--ap-texte) 12%, transparent); }
+.carte-theme .apercu .case { top: 20px; width: 22px; height: 22px; background: var(--ap-case); border-radius: 6px; }
+.carte-theme .apercu .case:nth-child(2) { left: 8px; }
+.carte-theme .apercu .case:nth-child(3) { left: 36px; border: 1.5px solid var(--ap-accent); }
+.carte-theme .apercu .case:nth-child(4) { left: 64px; }
+.carte-theme .apercu .ligne { left: 8px; top: 50px; width: 54px; height: 5px; background: var(--ap-texte); opacity: .75; }
+.carte-theme .apercu .point { right: 8px; top: 47px; width: 11px; height: 11px; border-radius: 50%; background: var(--ap-accent); }
+
+/* ═══════════════════════════ les autres thèmes ═════════════════════════ */
+
+/* Carnet : papier crème, encre sépia, une serif. Le carnet du naturaliste. */
+:root[data-theme="carnet"] {
+  --fond: #f6f0e1; --fond-2: #efe6d2; --case-vide: #e9dfc8; --silhouette: #c9bb9c;
+  --bordure: #b8a888; --texte: #2d2418; --texte-doux: #6e5f48;
+  --accent: #8a5a2b; --accent-sombre: #5f3d1a; --alerte: #b9412f;
+  --q1: #8f8574; --q2: #4e8a3f; --q3: #3b6ea8; --q4: #7d4ea3; --q5: #c8901a;
+  color-scheme: light;
+}
+:root[data-theme="carnet"] body { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; }
+:root[data-theme="carnet"] h1, :root[data-theme="carnet"] h2 { letter-spacing: .01em; }
+:root[data-theme="carnet"] .feuille .corps, :root[data-theme="carnet"] .modale {
+  background-image: repeating-linear-gradient(transparent 0 27px, rgba(138, 90, 43, .07) 27px 28px);
+}
+
+/* Abysses : bleu profond et bioluminescence. */
+:root[data-theme="abysses"] {
+  --fond: #03101f; --fond-2: #072038; --case-vide: #0a2a47; --silhouette: #1c4a6e;
+  --bordure: #164a6c; --texte: #d8f1ff; --texte-doux: #7fb6d6;
+  --accent: #2ee6d6; --accent-sombre: #15a99c; --alerte: #ff6b6b;
+  --q1: #7d9bb3; --q2: #3fd38a; --q3: #4aa8ff; --q4: #b57bff; --q5: #ffd166;
+  color-scheme: dark;
+}
+:root[data-theme="abysses"] { background: #06223a; }
+:root[data-theme="abysses"] .puce.actif, :root[data-theme="abysses"] button.principal {
+  box-shadow: 0 0 12px rgba(46, 230, 214, .35);
+}
+:root[data-theme="abysses"] .feuille img, :root[data-theme="abysses"] .modale img { filter: brightness(.92); }
+:root[data-theme="abysses"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+:root[data-theme="abysses"] nav { border-top: 1px solid var(--bordure); }
+
+/* Néon : violet de nuit, rose fluo. */
+:root[data-theme="neon"] {
+  --fond: #120a1f; --fond-2: #1b1030; --case-vide: #241540; --silhouette: #3d2766;
+  --bordure: #4a2c7a; --texte: #f6e9ff; --texte-doux: #b89ad8;
+  --accent: #ff3fa4; --accent-sombre: #c21f7a; --alerte: #ff5c5c;
+  --q1: #9c8cb8; --q2: #4de39a; --q3: #4fc3ff; --q4: #c77dff; --q5: #ffd84d;
+  color-scheme: dark;
+}
+:root[data-theme="neon"] { background: #1e0d3a; }
+:root[data-theme="neon"] h1, :root[data-theme="neon"] h2, :root[data-theme="neon"] .titre-section b {
+  text-shadow: 0 0 10px rgba(255, 63, 164, .5);
+}
+:root[data-theme="neon"] .puce.actif, :root[data-theme="neon"] button.principal {
+  box-shadow: 0 0 12px rgba(255, 63, 164, .45);
+}
+:root[data-theme="neon"] .feuille img, :root[data-theme="neon"] .modale img { filter: brightness(.92); }
+:root[data-theme="neon"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+:root[data-theme="neon"] nav { border-top: 1px solid var(--bordure); }
+
+/* Game Boy : les quatre verts de l'écran d'origine, et des pixels. */
+:root[data-theme="gameboy"] {
+  --fond: #cadc9f; --fond-2: #bdd08f; --case-vide: #a9bf7d; --silhouette: #6b8f45;
+  --bordure: #4e7a3a; --texte: #0f380f; --texte-doux: #306230;
+  --accent: #306230; --accent-sombre: #0f380f; --alerte: #8b2f2f;
+  --q1: #5a7a4a; --q2: #306230; --q3: #2d5a66; --q4: #4b3f73; --q5: #7a6a1a;
+  color-scheme: light;
+}
+:root[data-theme="gameboy"] body, :root[data-theme="gameboy"] button, :root[data-theme="gameboy"] input {
+  font-family: ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+}
+:root[data-theme="gameboy"] img, :root[data-theme="gameboy"] .pin-photo { image-rendering: pixelated; }
+:root[data-theme="gameboy"] .case-dex .vignette, :root[data-theme="gameboy"] .tuile,
+:root[data-theme="gameboy"] .puce, :root[data-theme="gameboy"] button.principal,
+:root[data-theme="gameboy"] .feuille .corps, :root[data-theme="gameboy"] .carte-theme { border-radius: 4px; }
+:root[data-theme="gameboy"] button.principal { color: #cadc9f; }
+
+/* Nuit étoilée : bleu nuit, accents dorés. */
+:root[data-theme="nuit"] {
+  --fond: #0a0f24; --fond-2: #121a38; --case-vide: #182250; --silhouette: #2c3a73;
+  --bordure: #2f3d78; --texte: #e6ebff; --texte-doux: #9aa8e0;
+  --accent: #ffd166; --accent-sombre: #d9a93f; --alerte: #ff6b6b;
+  --q1: #8a94bf; --q2: #4fd07a; --q3: #5aa8ff; --q4: #b98cff; --q5: #ffd166;
+  color-scheme: dark; background: #070b1e;
+}
+:root[data-theme="nuit"] .puce.actif, :root[data-theme="nuit"] button.principal { box-shadow: 0 0 12px rgba(255, 209, 102, .35); }
+:root[data-theme="nuit"] button.principal { color: #1a1400; }
+:root[data-theme="nuit"] .feuille img, :root[data-theme="nuit"] .modale img { filter: brightness(.92); }
+:root[data-theme="nuit"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+:root[data-theme="nuit"] nav { border-top: 1px solid var(--bordure); }
+
+/* Forêt : mousse et bois, accents ambre. */
+:root[data-theme="foret"] {
+  --fond: #14201a; --fond-2: #1c2c22; --case-vide: #243a2c; --silhouette: #3f6a4c;
+  --bordure: #3a5a44; --texte: #e9f3e6; --texte-doux: #9dbf9a;
+  --accent: #d9a441; --accent-sombre: #a77a24; --alerte: #e0623f;
+  --q1: #8aa48f; --q2: #5fc474; --q3: #4da0d6; --q4: #b48ae0; --q5: #e8bd4a;
+  color-scheme: dark; background: #101a14;
+}
+:root[data-theme="foret"] button.principal { color: #1d1400; }
+:root[data-theme="foret"] .feuille img, :root[data-theme="foret"] .modale img { filter: brightness(.92); }
+:root[data-theme="foret"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+:root[data-theme="foret"] nav { border-top: 1px solid var(--bordure); }
+
+/* Sakura : rose pâle, pétales. */
+:root[data-theme="sakura"] {
+  --fond: #fff7f9; --fond-2: #ffeef3; --case-vide: #fde4ec; --silhouette: #e8b9c8;
+  --bordure: #e3a8bc; --texte: #3a2530; --texte-doux: #8a5f70;
+  --accent: #e8538a; --accent-sombre: #b93466; --alerte: #d94040;
+  --q1: #a08a94; --q2: #4fae6a; --q3: #4a8fd6; --q4: #a06fd6; --q5: #e0a020;
+  color-scheme: light; background: #fff4f8;
+}
+:root[data-theme="sakura"] .feuille .corps, :root[data-theme="sakura"] .modale { background: #fffafc; }
+
+/* Hiver : blanc bleuté, neige. */
+:root[data-theme="hiver"] {
+  --fond: #f3f7fb; --fond-2: #e8eff7; --case-vide: #dde7f2; --silhouette: #b7c6d8;
+  --bordure: #a9bbd0; --texte: #182636; --texte-doux: #5c7190;
+  --accent: #2f7fd6; --accent-sombre: #1f5ea3; --alerte: #d9534f;
+  --q1: #8c9bb0; --q2: #3fa85a; --q3: #2f7fd6; --q4: #8a5fd6; --q5: #d9961a;
+  color-scheme: light; background: #eef3f9;
+}
+
+/* Aurore boréale : nuit arctique, accents verts. */
+:root[data-theme="aurore"] {
+  --fond: #07101f; --fond-2: #0f1b30; --case-vide: #152640; --silhouette: #2a4466;
+  --bordure: #27456a; --texte: #e4f4ff; --texte-doux: #93b4d0;
+  --accent: #5df2a6; --accent-sombre: #2fbf7a; --alerte: #ff6b6b;
+  --q1: #8aa0b8; --q2: #5df2a6; --q3: #5ab8ff; --q4: #be6eff; --q5: #ffd166;
+  color-scheme: dark; background: #050b16;
+}
+:root[data-theme="aurore"] button.principal { color: #06281a; }
+:root[data-theme="aurore"] .feuille img, :root[data-theme="aurore"] .modale img { filter: brightness(.92); }
+:root[data-theme="aurore"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+:root[data-theme="aurore"] nav { border-top: 1px solid var(--bordure); }
+
+/* Nuit d'été : vert-bleu profond, accents jaune luciole. */
+:root[data-theme="lucioles"] {
+  --fond: #0a1a16; --fond-2: #11261f; --case-vide: #17332a; --silhouette: #2f5a48;
+  --bordure: #2a5443; --texte: #eefaf2; --texte-doux: #9ac4ad;
+  --accent: #ffe37a; --accent-sombre: #d9b93c; --alerte: #ff7a6b;
+  --q1: #8fa89b; --q2: #5fd886; --q3: #58b0ff; --q4: #c08cff; --q5: #ffe37a;
+  color-scheme: dark; background: #06130f;
+}
+:root[data-theme="lucioles"] button.principal { color: #2a2200; }
+:root[data-theme="lucioles"] .feuille img, :root[data-theme="lucioles"] .modale img { filter: brightness(.92); }
+:root[data-theme="lucioles"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+:root[data-theme="lucioles"] nav { border-top: 1px solid var(--bordure); }
+
+/* Savane : terre chaude, accents orange couchant. */
+:root[data-theme="savane"] {
+  --fond: #2a1612; --fond-2: #3a211b; --case-vide: #4a2b22; --silhouette: #7a4a3a;
+  --bordure: #6a3f32; --texte: #ffe9d6; --texte-doux: #d9a98d;
+  --accent: #ff8c42; --accent-sombre: #d4651f; --alerte: #ff5c5c;
+  --q1: #b89a8a; --q2: #7ccf6a; --q3: #5ab0ff; --q4: #d18cff; --q5: #ffd166;
+  color-scheme: dark; background: #2a1612;
+}
+:root[data-theme="savane"] button.principal { color: #2a1200; }
+:root[data-theme="savane"] .feuille img, :root[data-theme="savane"] .modale img { filter: brightness(.94); }
+:root[data-theme="savane"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+:root[data-theme="savane"] nav { border-top: 1px solid var(--bordure); }
+
+/* Aquarelle : papier blanc cassé, taches pastel. */
+:root[data-theme="aquarelle"] {
+  --fond: #fffdf8; --fond-2: #f7f3ea; --case-vide: #efe8dc; --silhouette: #c9c0b2;
+  --bordure: #c2b8a8; --texte: #2e2a26; --texte-doux: #6f6860;
+  --accent: #4f8fcf; --accent-sombre: #356ca3; --alerte: #d9534f;
+  color-scheme: light; background: #fffdf8;
+}
+:root[data-theme="aquarelle"] .feuille .corps, :root[data-theme="aquarelle"] .modale { background: #fffefb; }
+
+/* Lagon : turquoise clair, accents eau. */
+:root[data-theme="lagon"] {
+  --fond: #f0fbfb; --fond-2: #e3f6f6; --case-vide: #d4f0f0; --silhouette: #9fd3d3;
+  --bordure: #8fc9c9; --texte: #0f3a3d; --texte-doux: #3f7a7d;
+  --accent: #0ab3a6; --accent-sombre: #078a80; --alerte: #e0623f;
+  --q1: #86a9aa; --q2: #3fb86a; --q3: #2f8fd6; --q4: #9a6fd6; --q5: #e0a020;
+  color-scheme: light; background: #dff6f6;
+}
+
+/* Nébuleuse : violet profond, accents mauves. */
+:root[data-theme="nebuleuse"] {
+  --fond: #0d0a1f; --fond-2: #17122f; --case-vide: #211a40; --silhouette: #3d3270;
+  --bordure: #3a2f6e; --texte: #efe9ff; --texte-doux: #a99bd6;
+  --accent: #c77dff; --accent-sombre: #9a4fe0; --alerte: #ff6b8a;
+  --q1: #9b93b8; --q2: #5fe09a; --q3: #5ab0ff; --q4: #c77dff; --q5: #ffd166;
+  color-scheme: dark; background: #0d0a1f;
+}
+:root[data-theme="nebuleuse"] .puce.actif, :root[data-theme="nebuleuse"] button.principal { box-shadow: 0 0 12px rgba(199, 125, 255, .4); }
+:root[data-theme="nebuleuse"] .feuille img, :root[data-theme="nebuleuse"] .modale img { filter: brightness(.92); }
+:root[data-theme="nebuleuse"] .tuile .voile { background: linear-gradient(transparent, rgba(0, 0, 0, .72)); }
+:root[data-theme="nebuleuse"] nav { border-top: 1px solid var(--bordure); }

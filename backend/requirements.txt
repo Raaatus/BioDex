@@ -1,0 +1,12 @@
+# API seule : de quoi faire tourner comptes, dex, amis et la réception des
+# photos. Léger, et suffisant pour développer l'application mobile.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pillow>=10.3
+# Le format des photos d'iPhone. Pillow ne le décode pas seul, et une photo
+# HEIC arrivait alors en « ce n'est pas une image » — cf. biodex/images.py.
+pillow-heif>=0.16
+# Le relais du site web (serveur_web.py) : il transmet à l'API en asynchrone,
+# et `requests` bloquerait la boucle d'événements à chaque photo envoyée.
+httpx>=0.27

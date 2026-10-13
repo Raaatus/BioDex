@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Biodex</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<!-- Safari ignore le manifeste pour l'icône de l'écran d'accueil : il ne lit
+     que celle-ci. Sans elle, iOS met une capture de la page. -->
+<link rel="apple-touch-icon" href="icone-192.png">
+<link rel="icon" href="icone-192.png">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#0ea5a4">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121316">
+<!-- Sans ceci, Safari garde les champs de saisie en clair sur un thème sombre :
+     texte noir sur fond noir. -->
+<meta name="color-scheme" content="light dark">
+<!-- Ces trois-là font qu'un iPhone traite la page comme une application une
+     fois ajoutée à l'écran d'accueil : plein écran, sans barre d'adresse. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Biodex">
+</head>
+<body>
+<div id="app"><div class="chargement">Chargement…</div></div>
+<!-- `model-viewer` de Google : le vrai rendu 3D, pour l'écran de la vitrine.
+     Les images pré-rendues de media.js restent pour les vignettes et la grille
+     des cinquante rangs, où cinquante contextes WebGL seraient déraisonnables. -->
+<script type="module"
+        src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.3.1/model-viewer.min.js"></script>
+<!-- La langue, en premier : les dictionnaires doivent précéder tout le reste. -->
+<script src="i18n.js"></script>
+<script src="media.js"></script>
+<!-- Le cristal des succès : un lancer de rayon en WebGL 2, qui partage son
+     shader avec l'application. -->
+<script src="cristal.js"></script>
+<!-- Le lancer de sphère pendant l'analyse. -->
+<script src="sphere.js"></script>
+<!-- Les confettis d'une découverte. -->
+<script src="fete.js"></script>
+<!-- La relâche : la sphère s'ouvre et la bête s'enfuit. -->
+<script src="relache.js"></script>
+<!-- Les fonds animés des thèmes : pluie de signes, étoiles, feuilles… -->
+<script src="fond.js"></script>
+<!-- L'arrangement libre du dex. -->
+<script src="disposition.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

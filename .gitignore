@@ -1,0 +1,35 @@
+# ── données et modèles : jamais dans le dépôt (base, photos, poids, catalogues)
+backend/donnees/
+backend/.venv/
+backend/*.zip
+backend/sel_serveur.txt
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.pt
+*.onnx
+
+# ── Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ── Flutter / Android
+app/build/
+app/.dart_tool/
+app/.flutter-plugins*
+app/android/.gradle/
+app/android/app/build/
+app/android/local.properties
+app/android/key.properties
+app/android/*.jks
+app/android/*.keystore
+app/.idea/
+*.iml
+
+# ── livrables et outillage local
+/apk/
+/outils/
+/palier/
+*.log
+.env

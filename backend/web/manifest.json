@@ -1,0 +1,23 @@
+{
+  "name": "Biodex",
+  "short_name": "Biodex",
+  "description": "Le dex du vivant : photographie ce que tu croises, complète ta collection.",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5a4",
+  "icons": [
+    {
+      "src": "icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "scope": "."
+}

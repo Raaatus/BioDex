@@ -1,0 +1,41 @@
+name: Release
+
+# Un tag `v*` construit l'APK et l'archive de code du serveur, et les attache
+# à une release GitHub. Les catalogues et les poids de modèles ne sont pas
+# construits ici : ils pèsent des gigaoctets et se publient à la main.
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  apk:
+    name: APK Android
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Construire
+        run: |
+          cd app
+          flutter pub get
+          flutter build apk --release
+          cp build/app/outputs/flutter-apk/app-release.apk ../biodex-${GITHUB_REF_NAME}.apk
+      - name: Archive du serveur et du site
+        run: |
+          zip -r biodex-serveur-${GITHUB_REF_NAME}.zip backend \
+            -x 'backend/donnees/*' 'backend/.venv/*' '*/__pycache__/*' '*.pyc'
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            biodex-${{ github.ref_name }}.apk
+            biodex-serveur-${{ github.ref_name }}.zip
+          generate_release_notes: true

@@ -1,0 +1,494 @@
+{
+  "alchimiste": {
+    "corps": "#e65cbc",
+    "fissure": "#a7ff26",
+    "source": "accent",
+    "sur": 0.345
+  },
+  "alpiniste": {
+    "corps": "#5cb1e6",
+    "fissure": "#ff4226",
+    "source": "accent",
+    "sur": 0.532
+  },
+  "apicultrice": {
+    "corps": "#e6aa5c",
+    "fissure": "#2684ff",
+    "source": "complément",
+    "sur": 0.993
+  },
+  "apothicaire": {
+    "corps": "#c15ce6",
+    "fissure": "#29ff26",
+    "source": "accent",
+    "sur": 0.923
+  },
+  "arachnologue": {
+    "corps": "#cc5ce6",
+    "fissure": "#ffcf73",
+    "source": "accent",
+    "sur": 0.994
+  },
+  "arcenciel": {
+    "corps": "#e697cf",
+    "fissure": "#73c9ff",
+    "source": "accent",
+    "sur": 0.639
+  },
+  "archere": {
+    "corps": "#d897e6",
+    "fissure": "#c2ff4e",
+    "source": "accent",
+    "sur": 0.974
+  },
+  "archiviste": {
+    "corps": "#e69764",
+    "fissure": "#2699ff",
+    "source": "accent",
+    "sur": 0.927
+  },
+  "astronaute": {
+    "corps": "#5ce688",
+    "fissure": "#ff3748",
+    "source": "accent",
+    "sur": 0.932
+  },
+  "bernard-lhermite": {
+    "corps": "#e6695c",
+    "fissure": "#26f2ff",
+    "source": "accent",
+    "sur": 0.911
+  },
+  "bibliothecaire": {
+    "corps": "#e65c6d",
+    "fissure": "#26ffe4",
+    "source": "complément",
+    "sur": 0.949
+  },
+  "biohazard": {
+    "corps": "#e6c55c",
+    "fissure": "#2659ff",
+    "source": "complément",
+    "sur": 0.999
+  },
+  "botaniste": {
+    "corps": "#5ce696",
+    "fissure": "#ff8f4a",
+    "source": "accent",
+    "sur": 0.837
+  },
+  "boussole": {
+    "corps": "#5ce697",
+    "fissure": "#ffaa5e",
+    "source": "accent",
+    "sur": 0.447
+  },
+  "bucheronne": {
+    "corps": "#e6765c",
+    "fissure": "#28d5ff",
+    "source": "complément",
+    "sur": 0.921
+  },
+  "calendrier": {
+    "corps": "#e6745c",
+    "fissure": "#26ff8e",
+    "source": "accent",
+    "sur": 0.809
+  },
+  "capitaine": {
+    "corps": "#5c7ae6",
+    "fissure": "#ff8526",
+    "source": "accent",
+    "sur": 0.379
+  },
+  "capricorne": {
+    "corps": "#5ce6cc",
+    "fissure": "#ff9768",
+    "source": "accent",
+    "sur": 0.798
+  },
+  "carnivore": {
+    "corps": "#e6ad67",
+    "fissure": "#ff2666",
+    "source": "accent",
+    "sur": 0.62
+  },
+  "charancon": {
+    "corps": "#5c9de6",
+    "fissure": "#ff873f",
+    "source": "accent",
+    "sur": 0.963
+  },
+  "chef": {
+    "corps": "#e6a05c",
+    "fissure": "#8fff73",
+    "source": "accent",
+    "sur": 0.316
+  },
+  "chevalier": {
+    "corps": "#5c74e6",
+    "fissure": "#ffd926",
+    "source": "complément",
+    "sur": 1.0
+  },
+  "coccinelle": {
+    "corps": "#e65c5f",
+    "fissure": "#77ff26",
+    "source": "accent",
+    "sur": 0.961
+  },
+  "cocon": {
+    "corps": "#bae688",
+    "fissure": "#ff7390",
+    "source": "accent",
+    "sur": 0.397
+  },
+  "conteuse": {
+    "corps": "#a7e65c",
+    "fissure": "#ff8d45",
+    "source": "accent",
+    "sur": 0.869
+  },
+  "cooking": {
+    "corps": "#5ce681",
+    "fissure": "#caff26",
+    "source": "accent",
+    "sur": 0.845
+  },
+  "couronne": {
+    "corps": "#e65c7b",
+    "fissure": "#26ffce",
+    "source": "complément",
+    "sur": 1.0
+  },
+  "crabe": {
+    "corps": "#e66e5c",
+    "fissure": "#26e0ff",
+    "source": "accent",
+    "sur": 0.874
+  },
+  "cueilleuse": {
+    "corps": "#dfe65c",
+    "fissure": "#3026ff",
+    "source": "complément",
+    "sur": 0.816
+  },
+  "detective": {
+    "corps": "#5c7de6",
+    "fissure": "#ffac64",
+    "source": "accent",
+    "sur": 0.69
+  },
+  "dragon": {
+    "corps": "#e65c73",
+    "fissure": "#26ffdb",
+    "source": "complément",
+    "sur": 1.0
+  },
+  "druide": {
+    "corps": "#e6a172",
+    "fissure": "#36ff47",
+    "source": "accent",
+    "sur": 0.899
+  },
+  "duelliste": {
+    "corps": "#e65c65",
+    "fissure": "#26fff0",
+    "source": "complément",
+    "sur": 0.502
+  },
+  "duo": {
+    "corps": "#e6b25c",
+    "fissure": "#26ff6e",
+    "source": "accent",
+    "sur": 0.62
+  },
+  "eclair": {
+    "corps": "#e0e65c",
+    "fissure": "#3026ff",
+    "source": "complément",
+    "sur": 1.0
+  },
+  "encyclopedie": {
+    "corps": "#e65c5e",
+    "fissure": "#26fffc",
+    "source": "complément",
+    "sur": 0.738
+  },
+  "entomologiste": {
+    "corps": "#e6945c",
+    "fissure": "#95ff73",
+    "source": "accent",
+    "sur": 0.283
+  },
+  "estivante": {
+    "corps": "#e6b65c",
+    "fissure": "#26baff",
+    "source": "accent",
+    "sur": 0.818
+  },
+  "exploratrice": {
+    "corps": "#e6825c",
+    "fissure": "#26c1ff",
+    "source": "accent",
+    "sur": 0.855
+  },
+  "fermiere": {
+    "corps": "#e6ad5c",
+    "fissure": "#2678ff",
+    "source": "accent",
+    "sur": 0.718
+  },
+  "fleuriste": {
+    "corps": "#e6b863",
+    "fissure": "#ff7394",
+    "source": "accent",
+    "sur": 0.965
+  },
+  "fougere": {
+    "corps": "#5ce6a8",
+    "fissure": "#ff4b26",
+    "source": "accent",
+    "sur": 0.571
+  },
+  "fourmiliere": {
+    "corps": "#e6915c",
+    "fissure": "#33b0ff",
+    "source": "complément",
+    "sur": 0.984
+  },
+  "geologue": {
+    "corps": "#e68a5c",
+    "fissure": "#c926ff",
+    "source": "accent",
+    "sur": 0.894
+  },
+  "grenouille": {
+    "corps": "#5ce697",
+    "fissure": "#ff7526",
+    "source": "accent",
+    "sur": 0.638
+  },
+  "herpetologue": {
+    "corps": "#e6b278",
+    "fissure": "#54ff63",
+    "source": "accent",
+    "sur": 0.814
+  },
+  "jardinier": {
+    "corps": "#e68a5c",
+    "fissure": "#9fff3a",
+    "source": "accent",
+    "sur": 0.989
+  },
+  "joailliere": {
+    "corps": "#db5ce6",
+    "fissure": "#ffcc6d",
+    "source": "accent",
+    "sur": 0.963
+  },
+  "jumeaux": {
+    "corps": "#5cb5e6",
+    "fissure": "#ff5e53",
+    "source": "accent",
+    "sur": 0.352
+  },
+  "jumelles": {
+    "corps": "#e6c55c",
+    "fissure": "#406dff",
+    "source": "complément",
+    "sur": 0.737
+  },
+  "lampe": {
+    "corps": "#5c6be6",
+    "fissure": "#fdff73",
+    "source": "accent",
+    "sur": 0.997
+  },
+  "limier": {
+    "corps": "#e6655c",
+    "fissure": "#73abff",
+    "source": "accent",
+    "sur": 0.952
+  },
+  "maraichere": {
+    "corps": "#95e66b",
+    "fissure": "#ff8773",
+    "source": "accent",
+    "sur": 0.7
+  },
+  "marathonienne": {
+    "corps": "#e68b5c",
+    "fissure": "#2680ff",
+    "source": "accent",
+    "sur": 0.734
+  },
+  "matinale": {
+    "corps": "#97c1e6",
+    "fissure": "#ff974d",
+    "source": "accent",
+    "sur": 0.999
+  },
+  "musicienne": {
+    "corps": "#e6a95c",
+    "fissure": "#3990ff",
+    "source": "complément",
+    "sur": 1.0
+  },
+  "mycologue": {
+    "corps": "#e6855c",
+    "fissure": "#e8ff6a",
+    "source": "accent",
+    "sur": 1.0
+  },
+  "myriapode": {
+    "corps": "#e6715c",
+    "fissure": "#26deff",
+    "source": "complément",
+    "sur": 0.996
+  },
+  "noe": {
+    "corps": "#e6905c",
+    "fissure": "#26adff",
+    "source": "complément",
+    "sur": 1.0
+  },
+  "nomade": {
+    "corps": "#e6a864",
+    "fissure": "#26ccff",
+    "source": "accent",
+    "sur": 0.933
+  },
+  "opticienne": {
+    "corps": "#5c9de6",
+    "fissure": "#ffa356",
+    "source": "accent",
+    "sur": 0.927
+  },
+  "orchidophile": {
+    "corps": "#e65cb1",
+    "fissure": "#96ff30",
+    "source": "accent",
+    "sur": 0.83
+  },
+  "orfevre": {
+    "corps": "#5c86e6",
+    "fissure": "#ffb526",
+    "source": "accent",
+    "sur": 0.647
+  },
+  "pecheur": {
+    "corps": "#dde661",
+    "fissure": "#5246ff",
+    "source": "complément",
+    "sur": 0.813
+  },
+  "peintre": {
+    "corps": "#e69d5c",
+    "fissure": "#26fff1",
+    "source": "accent",
+    "sur": 0.795
+  },
+  "pisteresse": {
+    "corps": "#e69f65",
+    "fissure": "#26ff92",
+    "source": "accent",
+    "sur": 0.936
+  },
+  "plongeuse": {
+    "corps": "#5c9fe6",
+    "fissure": "#ff2b28",
+    "source": "accent",
+    "sur": 0.838
+  },
+  "podium": {
+    "corps": "#e6b05c",
+    "fissure": "#2b47ff",
+    "source": "accent",
+    "sur": 0.965
+  },
+  "pompier": {
+    "corps": "#e65c63",
+    "fissure": "#26fff4",
+    "source": "complément",
+    "sur": 1.0
+  },
+  "randonneuse": {
+    "corps": "#e6905c",
+    "fissure": "#26ff75",
+    "source": "accent",
+    "sur": 0.935
+  },
+  "reine": {
+    "corps": "#e65d5c",
+    "fissure": "#b026ff",
+    "source": "accent",
+    "sur": 0.522
+  },
+  "russule": {
+    "corps": "#e67b5c",
+    "fissure": "#26ceff",
+    "source": "complément",
+    "sur": 0.909
+  },
+  "saisons": {
+    "corps": "#e6955c",
+    "fissure": "#26ff5c",
+    "source": "accent",
+    "sur": 0.698
+  },
+  "scene": {
+    "corps": "#ce5ce6",
+    "fissure": "#4cff26",
+    "source": "complément",
+    "sur": 1.0
+  },
+  "scientifique": {
+    "corps": "#5cd6e6",
+    "fissure": "#da26ff",
+    "source": "accent",
+    "sur": 0.679
+  },
+  "skateur": {
+    "corps": "#e68dc7",
+    "fissure": "#ffc273",
+    "source": "accent",
+    "sur": 0.935
+  },
+  "skieuse": {
+    "corps": "#65a3e6",
+    "fissure": "#ff7f47",
+    "source": "accent",
+    "sur": 0.91
+  },
+  "tetard": {
+    "corps": "#5ce6d2",
+    "fissure": "#ffaa5a",
+    "source": "accent",
+    "sur": 0.882
+  },
+  "touriste": {
+    "corps": "#5cd6e6",
+    "fissure": "#ffa15b",
+    "source": "accent",
+    "sur": 0.549
+  },
+  "urbaine": {
+    "corps": "#e65cc1",
+    "fissure": "#53ff26",
+    "source": "accent",
+    "sur": 0.973
+  },
+  "vedette": {
+    "corps": "#e65cc8",
+    "fissure": "#ffe85b",
+    "source": "accent",
+    "sur": 0.743
+  },
+  "veilleuse": {
+    "corps": "#b15ce6",
+    "fissure": "#ff965b",
+    "source": "accent",
+    "sur": 0.53
+  }
+}

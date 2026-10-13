@@ -1,0 +1,19 @@
+# Le classificateur, à installer en plus de requirements.txt sur la machine qui
+# analyse réellement les photos. C'est le gros morceau (~2,5 Go avec les roues
+# torch) ; l'API fonctionne sans, les captures restent simplement en attente.
+-r requirements.txt
+
+# Version CPU : sur un serveur sans carte graphique, la roue par défaut tire
+# 2 Go de CUDA pour rien. Pour du GPU, installer torch depuis l'index officiel.
+torch>=2.2
+torchvision>=0.17
+open_clip_torch>=2.24
+megadetector>=5.0
+
+# Détourage de l'animal pour les vignettes du dex. Le modèle (176 Mo) se
+# télécharge tout seul au premier usage. onnxruntime est explicite parce que
+# rembg ne le tire pas de lui-même et échoue sinon avec un message obscur.
+# Sans ces deux paquets, tout fonctionne : les cases affichent alors la
+# vignette carrée au lieu de l'animal détouré.
+rembg>=2.0.60
+onnxruntime>=1.17

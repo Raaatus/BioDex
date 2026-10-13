@@ -1,0 +1,60 @@
+{
+ "version": 1,
+ "fichiers": [
+  {
+   "fichier": "biodex-dex.sqlite",
+   "octets": 435589120,
+   "sha256": "5a91ecfe99a4df2e5839f6ca2d6559467905ebc90c492dd5127f2a3b5ec45b2e"
+  },
+  {
+   "fichier": "catalogue_aquatique.pt",
+   "octets": 37901242,
+   "sha256": "e6de06eccf658bb87df254648d88b8358b2e312692cb013d4eb5856151ab2a65"
+  },
+  {
+   "fichier": "catalogue_champi.pt",
+   "octets": 273523944,
+   "sha256": "9d3e44a5084a6b4873329b33c781be3b8dc16e438d42982fe7ed03871998c062"
+  },
+  {
+   "fichier": "catalogue_plantes.pt",
+   "octets": 704071023,
+   "sha256": "0d4670ab4e45ec582fb698bb4ef670faac0b46d08902154ad7661c97286153b6"
+  },
+  {
+   "fichier": "catalogue_v2.pt",
+   "octets": 653416268,
+   "sha256": "ac4c7d091c35e2b4f6a37570016f1215ae886a68a3f0275fc72ae5216f225b0a"
+  },
+  {
+   "fichier": "ft_classes.json",
+   "octets": 88280,
+   "sha256": "07fedc35017671aaca1be6662e1046d65e4c53226887650a69741cafc18a12e8"
+  },
+  {
+   "fichier": "ft_toxiques.json",
+   "octets": 293,
+   "sha256": "126d815a4000d829ba84ad248ea773894eabd194c2239cd35e9c2c4afa741313"
+  },
+  {
+   "fichier": "modeles/md_v5a.0.1.pt",
+   "octets": 280767041,
+   "sha256": "fe3e90e4b1955821ab7c1f88b446dc0c8cb25e109fdd1872916a55305294a5ef"
+  },
+  {
+   "fichier": "silhouettes.tar",
+   "octets": 43632640,
+   "sha256": "ab8ffb5a0a495b2d52e038ed789cbe13493cff8d0932764f25c42c1e51418882"
+  },
+  {
+   "fichier": "sources-dex.tar",
+   "octets": 17274880,
+   "sha256": "e1e4707cc364bed14f9ce26502544021b70b6a58ac4a65e42d1b422e9431095a"
+  },
+  {
+   "fichier": "tete_genres.pt",
+   "octets": 1737733,
+   "sha256": "b4a133394dbccc1a058bc00c89d063241283054667d2f48f9895aed28e95dd68"
+  }
+ ]
+}

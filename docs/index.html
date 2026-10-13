@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biodex — the dex of living things</title>
+<meta name="description" content="Biodex: a free, self-hosted Pokédex of living things. Photograph, recognise, collect with friends.">
+<style>
+  :root { --fond: #0b1220; --fond2: #121a2e; --texte: #e8eefc; --doux: #9aa8c7; --accent: #2fc3c1; --accent2: #ffd166; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--fond); color: var(--texte); }
+  a { color: var(--accent); }
+  header { padding: 72px 20px 40px; text-align: center; background: radial-gradient(ellipse at 50% -20%, #1d3b5c 0, var(--fond) 60%); }
+  header h1 { font-size: clamp(40px, 8vw, 72px); margin: 0; letter-spacing: -.02em; }
+  header p.sous { font-size: clamp(18px, 3vw, 24px); color: var(--doux); margin: 10px 0 28px; }
+  .boutons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .bouton { display: inline-block; padding: 12px 22px; border-radius: 14px; font-weight: 700; text-decoration: none; }
+  .bouton.principal { background: var(--accent); color: #06231f; }
+  .bouton.secondaire { border: 1.5px solid var(--doux); color: var(--texte); }
+  main { max-width: 1040px; margin: 0 auto; padding: 0 20px 80px; }
+  section { margin: 56px 0; }
+  h2 { font-size: 28px; margin: 0 0 8px; }
+  p.intro { color: var(--doux); max-width: 70ch; }
+  .galerie { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; margin-top: 18px; }
+  .galerie figure { margin: 0; }
+  .galerie img { width: 100%; border-radius: 18px; border: 1px solid #243352; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+  .galerie figcaption { font-size: 13px; color: var(--doux); margin-top: 6px; text-align: center; }
+  .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 18px; }
+  .carte { background: var(--fond2); border: 1px solid #243352; border-radius: 16px; padding: 18px; }
+  .carte h3 { margin: 0 0 6px; font-size: 17px; }
+  .carte p { margin: 0; color: var(--doux); font-size: 14.5px; }
+  pre { background: #050a14; border: 1px solid #243352; border-radius: 12px; padding: 14px 16px; overflow-x: auto; font-size: 13.5px; }
+  footer { text-align: center; color: var(--doux); font-size: 13px; padding: 30px 20px; border-top: 1px solid #1c2740; }
+  .etiquette { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent2); }
+</style>
+</head>
+<body>
+<header>
+  <span class="etiquette">Free · self-hosted · no tracking</span>
+  <h1>Biodex</h1>
+  <p class="sous">The dex of living things. Photograph whatever you come across, fill your collection, compare it with your friends'.</p>
+  <div class="boutons">
+    <a class="bouton principal" href="https://github.com/Raaatus/BioDex/releases/latest">Download the Android app</a>
+    <a class="bouton secondaire" href="https://github.com/Raaatus/BioDex">Source on GitHub</a>
+    <a class="bouton secondaire" href="https://github.com/Raaatus/BioDex#host-your-own-server">Host your own server</a>
+  </div>
+</header>
+
+<main>
+  <section>
+    <h2>How it works</h2>
+    <p class="intro">A photo goes to your server. A detector frames the animal, a vision model compares it to nearly a million species, and the matching slot fills up in your dex. Plants and fungi have their own engine. Nothing leaves your server.</p>
+    <div class="cartes">
+      <div class="carte"><h3>📸 Photograph</h3><p>From the Android app or the website. Crop, cut out with your finger, pick the kingdom, send.</p></div>
+      <div class="carte"><h3>🧠 Recognise</h3><p>MegaDetector to frame, BioCLIP 2 to name, Pl@ntNet for plants. A frequency prior rules out improbable exotic species.</p></div>
+      <div class="carte"><h3>📚 Collect</h3><p>976,000 slots, five rarity levels, 50 ranks, 82 achievements with their own 3D frog. Arrange your dex like a desktop.</p></div>
+      <div class="carte"><h3>👥 Share</h3><p>Friends, activity feed, reactions, leaderboard, map of everyone's finds. You decide who sees what.</p></div>
+      <div class="carte"><h3>🎨 Dress up</h3><p>Seventeen themes, thirteen with an animated backdrop: falling glyphs, northern lights, savanna, nebula…</p></div>
+      <div class="carte"><h3>🔒 Keep</h3><p>No email, no tracking, no central server. Your photos stay with you, between you and your friends.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Screenshots</h2>
+    <p class="intro">The web client, on a phone, in French — the interface is also available in English. The Android app offers the same screens, with the camera on top.</p>
+    <div class="galerie">
+      <figure><img src="captures/dex.png" alt="Le dex"><figcaption>The dex</figcaption></figure>
+      <figure><img src="captures/carte.png" alt="La carte"><figcaption>The map of finds</figcaption></figure>
+      <figure><img src="captures/amis.png" alt="Le fil des amis"><figcaption>The friends feed</figcaption></figure>
+      <figure><img src="captures/succes.png" alt="Les succès"><figcaption>Achievements</figcaption></figure>
+      <figure><img src="captures/paliers.png" alt="Les rangs"><figcaption>The 50 ranks</figcaption></figure>
+      <figure><img src="captures/ranger.png" alt="Ranger le dex"><figcaption>Arranging the dex</figcaption></figure>
+      <figure><img src="captures/theme-hacker.png" alt="Thème Hacker"><figcaption>Hacker theme</figcaption></figure>
+      <figure><img src="captures/theme-abysses.png" alt="Thème Abysses"><figcaption>Abyss theme</figcaption></figure>
+      <figure><img src="captures/theme-sakura.png" alt="Thème Sakura"><figcaption>Sakura theme</figcaption></figure>
+      <figure><img src="captures/theme-nuit.png" alt="Thème Nuit étoilée"><figcaption>Starry night theme</figcaption></figure>
+      <figure><img src="captures/dex-en.png" alt="The dex, in English"><figcaption>In English</figcaption></figure>
+      <figure><img src="captures/reglages.png" alt="Les réglages"><figcaption>Settings and themes</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Host your own server</h2>
+    <p class="intro">A Linux box with Python 3.12, 8 GB of RAM and about twenty gigabytes of disk is enough. No GPU needed: an analysis takes about fifteen seconds on a CPU.</p>
+<pre>git clone https://github.com/Raaatus/BioDex.git
+cd BioDex/backend
+uv venv .venv && uv pip install -p .venv/bin/python -r requirements.txt -r requirements-moteur.txt
+# catalogues and weights: see the README, section “The data”
+./run.sh                      # the API, on :8077
+.venv/bin/python serveur_web.py   # the web client, on :8090</pre>
+    <p class="intro">The repository README details every step: the data to download, the systemd service, HTTPS, upgrading without losing anything.</p>
+  </section>
+
+  <section>
+    <h2>Sources</h2>
+    <p class="intro">Species and their observations come from <a href="https://www.gbif.org/">GBIF</a>; silhouettes from <a href="https://www.phylopic.org/">PhyloPic</a> and its contributors; articles from Wikipedia; recognition from <a href="https://github.com/microsoft/CameraTraps">MegaDetector</a>, <a href="https://imageomics.github.io/bioclip-2/">BioCLIP 2</a> and <a href="https://plantnet.org/">Pl@ntNet</a>. Thanks to them.</p>
+  </section>
+</main>
+
+<footer>Biodex is released under the MIT licence. This page is served by GitHub Pages from the repository's <code>docs/</code> folder.</footer>
+</body>
+</html>
