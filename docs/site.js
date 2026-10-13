@@ -25,7 +25,7 @@
   function initDecor() {
     let nom = null;
     try { nom = localStorage.getItem('biodex_site_decor'); } catch (_) {}
-    if (!DECORS.includes(nom)) nom = ['aurore', 'etoiles', 'nebuleuse', 'lucioles'][Math.floor(Math.random() * 4)];
+    if (!DECORS.includes(nom)) nom = 'savane';
     const zone = document.querySelector('.decors');
     if (zone) {
       zone.innerHTML = '<span class="legende">Backdrop of this page — your choice is remembered.</span>'
@@ -134,6 +134,32 @@
     });
   }
 
+  // ── le sondage : un serveur public ? ─────────────────────────────────────
+  // Le site est statique, sans serveur derrière : le vote est un 👍 sur une
+  // issue GitHub. Un compte = une voix, pas de robots, aucune adresse IP
+  // gardée ici. On lit le compte par l'API publique, et on le garde dix
+  // minutes en cache pour ne pas user la limite de soixante appels par heure.
+  const SONDAGE = { depot: 'Raaatus/BioDex', issue: 1 };
+  async function initSondage() {
+    const zone = document.querySelector('.sondage [data-compte]');
+    if (!zone) return;
+    const cle = 'biodex_sondage';
+    try {
+      const c = JSON.parse(localStorage.getItem(cle) || 'null');
+      if (c && Date.now() - c.t < 10 * 60 * 1000) { montre(c.n); return; }
+    } catch (_) {}
+    try {
+      const r = await fetch(`https://api.github.com/repos/${SONDAGE.depot}/issues/${SONDAGE.issue}`, { headers: { Accept: 'application/vnd.github+json' } });
+      if (!r.ok) throw new Error(r.status);
+      const n = (await r.json()).reactions?.['+1'] ?? 0;
+      try { localStorage.setItem(cle, JSON.stringify({ n, t: Date.now() })); } catch (_) {}
+      montre(n);
+    } catch (_) { zone.textContent = ''; }
+    function montre(n) {
+      zone.textContent = n === 0 ? 'be the first' : n === 1 ? '1 person so far' : `${n} people so far`;
+    }
+  }
+
   // ── la documentation ─────────────────────────────────────────────────────
   function initDoc() {
     const prose = document.querySelector('.prose');
@@ -167,5 +193,5 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', () => { initDecor(); initBarre(); initApparitions(); initGalerie(); initVisionneuse(); initDoc(); });
+  document.addEventListener('DOMContentLoaded', () => { initDecor(); initBarre(); initApparitions(); initGalerie(); initVisionneuse(); initSondage(); initDoc(); });
 })();
