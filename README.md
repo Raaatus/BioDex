@@ -63,7 +63,7 @@ Two clients, one server:
 
 ## Screenshots
 
-The web client, on a phone. The Android app shows the same screens, and the [iPhone section](#on-iphone-no-app-the-website) shows it installed on a home screen. The interface is in French here; switch to English in the settings.
+The web client on a phone, with demo accounts. The Android app shows the same screens; the [iPhone section](#on-iphone-no-app-the-website) shows it installed on a home screen.
 
 | The dex | A species | Arranging the dex | The map |
 |:-:|:-:|:-:|:-:|
@@ -77,9 +77,9 @@ The web client, on a phone. The Android app shows the same screens, and the [iPh
 |:-:|:-:|:-:|:-:|
 | ![](docs/captures/profil.png) | ![](docs/captures/succes.png) | ![](docs/captures/paliers.png) | ![](docs/captures/galerie.png) |
 
-| Capture | Settings | In English | Showcase |
+| Capture | Settings | In French | Best catches |
 |:-:|:-:|:-:|:-:|
-| ![](docs/captures/capture.png) | ![](docs/captures/reglages.png) | ![](docs/captures/dex-en.png) | ![](docs/captures/vitrine.png) |
+| ![](docs/captures/capture.png) | ![](docs/captures/reglages.png) | ![](docs/captures/dex-fr.png) | ![](docs/captures/vitrine.png) |
 
 Seventeen themes, thirteen of them with an animated backdrop behind the screens:
 

@@ -52,15 +52,28 @@ def main() -> None:
 <body>
 <div class="page">
   <header class="barre">
-    <a class="marque" href="./"><img src="icone.png" alt="">Biodex</a>
-    <nav>
-      <a href="./">Home</a>
-      <a href="./#captures">Screenshots</a>
-      <a href="./#telecharger">Download</a>
-      <a class="actif" href="docs.html">Documentation</a>
-      <a href="{DEPOT}">GitHub</a>
-      <a class="cta" href="{DEPOT}/releases/latest">Get Biodex</a>
-    </nav>
+    <div class="dedans">
+      <a class="marque" href="./"><img src="icone.png" alt="">Biodex</a>
+      <nav aria-label="Sections">
+        <a href="./#fonctions">Features</a>
+        <a href="./#captures">Screenshots</a>
+        <a href="./#themes">Themes</a>
+        <a href="./#telecharger">Download</a>
+        <a class="actif" href="docs.html">Docs</a>
+      </nav>
+      <div class="actions">
+        <button class="menu" aria-label="Menu" aria-expanded="false">☰</button>
+        <a href="{DEPOT}" aria-label="GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+        <a class="cta" href="{DEPOT}/releases/latest">Get Biodex</a>
+      </div>
+      <div class="tiroir">
+        <a href="./">Home</a>
+        <a href="./#captures">Screenshots</a>
+        <a href="./#telecharger">Download</a>
+        <a class="actif" href="docs.html">Documentation</a>
+        <a href="{DEPOT}">GitHub</a>
+      </div>
+    </div>
   </header>
   <div class="doc">
     <aside>
@@ -73,7 +86,7 @@ def main() -> None:
     </article>
   </div>
 </div>
-<footer>Generated from <a href="{DEPOT}/blob/main/README.md">README.md</a> by <code>docs/genere.py</code>. Biodex is released under the MIT licence.</footer>
+<footer><div class="bas">Generated from <a href="{DEPOT}/blob/main/README.md">README.md</a> by <code>docs/genere.py</code>. Biodex is released under the MIT licence.</div></footer>
 <script src="fond.js"></script>
 <script src="site.js"></script>
 </body>
